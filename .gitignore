@@ -1,0 +1,20 @@
+# Ignorar archivos del sistema operativo
+.DS_Store
+Thumbs.db
+
+# Ignorar logs generales
+*.log
+
+# Ignorar entornos de Laravel
+/backend/vendor/
+/backend/.env
+/backend/storage/*.key
+
+# Ignorar entornos de Vue.js
+/don-onofre-frontend/node_modules/
+/don-onofre-frontend/.env
+/don-onofre-frontend/dist/
+
+# Ignorar carpetas de editores
+.vscode/
+.idea/
