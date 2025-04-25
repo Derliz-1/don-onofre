@@ -54,3 +54,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/productos/{producto}', [ProductoController::class, 'update']);
     Route::delete('/productos/{producto}', [ProductoController::class, 'destroy']);
 });
+use Illuminate\Support\Facades\Artisan;
+
+Route::get('/migrar', function () {
+    Artisan::call('migrate', ['--force' => true]);
+    return 'Migraciones ejecutadas ✅';
+});
