@@ -1,46 +1,37 @@
-FROM php:8.2-fpm
+FROM php:8.2
 
-# Instalar dependencias
+# Instalar dependencias del sistema
 RUN apt-get update && apt-get install -y \
-    build-essential \
     libpng-dev \
-    libjpeg-dev \
     libonig-dev \
     libxml2-dev \
     zip \
     unzip \
     curl \
-    git \
-    sqlite3 \
-    libsqlite3-dev \
-    libzip-dev
+    git
 
-# Instalar extensiones PHP necesarias
-RUN docker-php-ext-install pdo pdo_mysql pdo_sqlite mbstring exif pcntl bcmath gd zip
+# Instalar extensiones de PHP necesarias
+RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd
 
 # Instalar Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Establecer el directorio de trabajo
+# Crear directorio de trabajo
 WORKDIR /var/www
 
 # Copiar archivos
 COPY . .
 
-# Instalar dependencias del proyecto
-RUN composer install --no-dev --optimize-autoloader
+# Instalar dependencias PHP
+RUN composer install --no-interaction --prefer-dist --optimize-autoloader
 
-# Copiar .env.example como .env (esta línea arregla tu problema)
-RUN cp .env.example .env
+# Copiar .env de ejemplo y generar key
+RUN cp .env.example .env \
+    && php artisan key:generate
 
-# Generar clave de app
-RUN php artisan key:generate
+# Migraciones y seeder
+RUN php artisan migrate --force \
+    && php artisan db:seed --class=AdminUserSeeder
 
-# Migrar la base de datos
-RUN php artisan migrate --force || true
-
-# Puerto
-EXPOSE 8000
-
-# Comando por defecto
-CMD php artisan migrate --force && php artisan db:seed --class=AdminUserSeeder && php artisan serve --host=0.0.0.0 --port=8000
+# Iniciar servidor
+CMD php artisan serve --host=0.0.0.0 --port=8000
