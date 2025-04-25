@@ -43,4 +43,4 @@ RUN php artisan migrate --force || true
 EXPOSE 8000
 
 # Comando por defecto
-CMD php artisan serve --host=0.0.0.0 --port=8000
+CMD php artisan migrate --force && php artisan db:seed --class=AdminUserSeeder && php artisan serve --host=0.0.0.0 --port=8000
