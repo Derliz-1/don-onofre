@@ -30,6 +30,9 @@ COPY . .
 # Instalar dependencias del proyecto
 RUN composer install --no-dev --optimize-autoloader
 
+# Copiar .env.example como .env (esta línea arregla tu problema)
+RUN cp .env.example .env
+
 # Generar clave de app
 RUN php artisan key:generate
 
