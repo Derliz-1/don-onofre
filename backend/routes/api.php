@@ -54,3 +54,18 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/productos/{producto}', [ProductoController::class, 'update']);
     Route::delete('/productos/{producto}', [ProductoController::class, 'destroy']);
 });
+
+use Illuminate\Support\Facades\Hash;
+
+Route::get('/crear-admin', function () {
+    $admin = User::firstOrCreate(
+        ['email' => 'admin@example.com'],
+        [
+            'name' => 'Admin',
+            'password' => Hash::make('admin123'),
+            'is_admin' => true
+        ]
+    );
+
+    return 'Administrador creado ✅';
+});
