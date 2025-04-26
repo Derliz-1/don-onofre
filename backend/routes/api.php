@@ -62,3 +62,21 @@ Route::get('/migrar', function () {
     return response()->json(['message' => 'Migraciones ejecutadas ✅']);
 });
 
+
+Route::get('/crear-admin', function () {
+    try {
+        $admin = User::firstOrCreate(
+            ['email' => 'admin@example.com'],
+            [
+                'name' => 'Admin',
+                'password' => Hash::make('admin123'),
+                'is_admin' => true
+            ]
+        );
+
+        return response()->json(['message' => 'Administrador creado ✅']);
+    } catch (\Exception $e) {
+        return response()->json(['error' => $e->getMessage()], 500);
+    }
+});
+
