@@ -1,12 +1,13 @@
 FROM php:8.2-apache
 
-# Instalamos librerías necesarias
 RUN apt-get update && apt-get install -y \
     libpng-dev \
     libjpeg62-turbo-dev \
     libfreetype6-dev \
     libzip-dev \
     libonig-dev \
+    libsqlite3-dev \
+    sqlite3 \
     zip \
     unzip \
     git \
