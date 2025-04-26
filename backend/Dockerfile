@@ -1,32 +1,33 @@
-# Etapa 1: build de dependencias
-FROM composer:latest AS vendor
+# Usa PHP 8.2 oficial con Alpine (liviano)
+FROM php:8.2-fpm-alpine
 
-WORKDIR /app
-COPY backend/composer.json backend/composer.lock ./
-RUN composer install --no-dev --prefer-dist --no-scripts --no-interaction
+# Instala extensiones PHP necesarias
+RUN apk add --no-cache \
+    php-pdo php-pdo_mysql php-pdo_sqlite php-mbstring php-exif php-pcntl php-bcmath php-gd php-tokenizer php-ctype php-curl php-session php-openssl \
+    php-fileinfo php-zip php-simplexml php-dom php-xmlwriter php-xmlreader \
+    php-json php-iconv php-opcache \
+    oniguruma-dev libpng-dev libjpeg-turbo-dev freetype-dev zlib-dev zip unzip curl git
 
-# Etapa 2: Laravel + PHP
-FROM php:8.2-fpm
-
+# Copia el proyecto (como estás en carpeta backend/ ya)
 WORKDIR /var/www
 
-# Instalar dependencias necesarias
-RUN apt-get update && apt-get install -y \
-    git unzip curl libpng-dev libjpeg-dev libfreetype6-dev libonig-dev libzip-dev zip \
-    && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install pdo pdo_mysql pdo_sqlite mbstring exif pcntl bcmath gd zip
+COPY . .
 
-# Copiar Composer desde el build anterior
-COPY --from=vendor /app/vendor /var/www/vendor
+# Instala Composer (desde la imagen oficial)
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Copiar el resto del proyecto
-COPY backend ./
+# Instala dependencias de Laravel
+RUN composer install --no-dev --prefer-dist --no-progress --no-interaction
 
-# Permisos y key de la app
-RUN chmod -R 777 storage bootstrap/cache \
-    && php artisan config:cache \
-    && php artisan route:cache
+# Crea el archivo SQLite si no existe
+RUN mkdir -p database && touch database/database.sqlite
 
+# Permisos correctos
+RUN chmod -R 775 storage bootstrap/cache database && \
+    chown -R www-data:www-data /var/www
+
+# Puerto que expone Laravel
 EXPOSE 8000
-CMD php artisan serve --host=0.0.0.0 --port=8000
 
+# Comando para correr el servidor de Laravel
+CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8000"]
