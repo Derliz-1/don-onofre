@@ -34,6 +34,8 @@ WORKDIR /var/www/html
 RUN composer install --no-dev --prefer-dist --no-interaction --optimize-autoloader
 
 # Dar permisos correctos
+RUN mkdir -p /var/www/database
+RUN touch /var/www/database/database.sqlite
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache /var/www/database
 
 
