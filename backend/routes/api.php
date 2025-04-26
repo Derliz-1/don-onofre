@@ -54,28 +54,3 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/productos/{producto}', [ProductoController::class, 'update']);
     Route::delete('/productos/{producto}', [ProductoController::class, 'destroy']);
 });
-
-
-Route::get('/crear-admin', function () {
-    try {
-        $admin = User::firstOrCreate(
-            ['email' => 'admin@example.com'],
-            [
-                'name' => 'Admin',
-                'password' => Hash::make('admin123'),
-                'is_admin' => true
-            ]
-        );
-
-        return response()->json(['message' => 'Administrador creado ✅']);
-    } catch (\Exception $e) {
-        return response()->json(['error' => $e->getMessage()], 500);
-    }
-});
-
-use Illuminate\Support\Facades\Artisan;
-
-Route::get('/migrar', function () {
-    Artisan::call('migrate', ['--force' => true]);
-    return response()->json(['message' => 'Migraciones ejecutadas ✅']);
-});
