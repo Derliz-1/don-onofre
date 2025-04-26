@@ -32,7 +32,7 @@ RUN chown -R www-data:www-data /var/www/html \
 WORKDIR /var/www/html
 
 # Copia configuración personalizada de Apache
-COPY ./backend/docker/apache.conf /etc/apache2/sites-available/000-default.conf
+COPY ./docker/apache.conf /etc/apache2/sites-available/000-default.conf
 
 # Habilita mod_rewrite de Apache (necesario para Laravel)
 RUN a2enmod rewrite
