@@ -7,6 +7,7 @@ RUN apt-get update && apt-get install -y \
     libjpeg-dev \
     libfreetype6-dev \
     libzip-dev \
+    libsqlite3-dev \        # <-- ¡ESTA LÍNEA AGREGADA!
     zip \
     unzip \
     git \
@@ -26,7 +27,7 @@ RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cac
 # Activamos módulo rewrite
 RUN a2enmod rewrite
 
-# Exponemos el puerto 80
+# Exponemos el puerto
 EXPOSE 80
 
 # Comando de inicio
