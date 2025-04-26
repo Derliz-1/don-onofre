@@ -1,21 +1,21 @@
 # Usa una imagen oficial de PHP con Apache
 FROM php:8.2-apache
 
-# Instala dependencias necesarias
+# Instalamos todas las librerías necesarias ANTES de instalar extensiones PHP
 RUN apt-get update && apt-get install -y \
     libpng-dev \
     libjpeg-dev \
     libfreetype6-dev \
+    libzip-dev \
+    libonig-dev \
     zip \
     unzip \
     git \
-    curl \
-    libonig-dev \
-    libzip-dev
+    curl
 
-# Extensiones PHP necesarias
-RUN docker-php-ext-configure gd --with-freetype --with-jpeg && \
-    docker-php-ext-install gd pdo pdo_mysql pdo_sqlite mbstring zip
+# Configuramos e instalamos extensiones PHP
+RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install gd pdo pdo_mysql pdo_sqlite mbstring zip
 
 # Instala Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
