@@ -80,3 +80,9 @@ Route::get('/crear-admin', function () {
     }
 });
 
+
+Route::get('/recompilar-rutas', function () {
+    Artisan::call('route:clear');
+    Artisan::call('route:cache');
+    return response()->json(['message' => 'Rutas recompiladas correctamente ✅']);
+});
