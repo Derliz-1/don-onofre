@@ -1,37 +1,32 @@
+# Imagen base oficial de PHP + Apache
 FROM php:8.2-apache
 
+# Instalamos extensiones necesarias
 RUN apt-get update && apt-get install -y \
     libpng-dev \
-    libjpeg62-turbo-dev \
+    libjpeg-dev \
     libfreetype6-dev \
     libzip-dev \
-    libonig-dev \
-    libsqlite3-dev \
-    sqlite3 \
     zip \
     unzip \
     git \
-    curl
+    curl \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install gd pdo pdo_mysql pdo_sqlite mbstring zip
 
-# Configuramos correctamente GD
-RUN docker-php-ext-configure gd --with-freetype --with-jpeg
-
-# Instalamos extensiones PHP necesarias
-RUN docker-php-ext-install pdo pdo_mysql pdo_sqlite mbstring zip gd
-
-# Copiamos apache.conf
+# Copiamos configuración personalizada de Apache
 COPY ./docker/apache.conf /etc/apache2/sites-available/000-default.conf
 
-# Copiamos archivos del proyecto
+# Copiamos todos los archivos del proyecto
 COPY . /var/www/html
 
-# Seteamos permisos
+# Damos permisos correctos a Laravel
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 
-# Activamos módulos de Apache
+# Activamos módulo rewrite
 RUN a2enmod rewrite
 
-# Exponemos el puerto
+# Exponemos el puerto 80
 EXPOSE 80
 
 # Comando de inicio
