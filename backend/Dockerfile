@@ -1,33 +1,30 @@
-# Etapa 1: Dependencias con Composer
-FROM composer:2 AS vendor
+FROM php:8.2-fpm
 
-WORKDIR /app
+# Instalar dependencias del sistema
+RUN apt-get update && apt-get install -y \
+    git unzip curl libpng-dev libjpeg-dev libfreetype6-dev libonig-dev libzip-dev zip \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install pdo pdo_mysql pdo_sqlite mbstring exif pcntl bcmath gd zip
 
-COPY composer.json composer.lock ./
-RUN composer install --no-dev --prefer-dist --no-scripts --no-progress --no-interaction
-
-# Etapa 2: Servidor PHP con Laravel
-FROM php:8.2-fpm-alpine
-
-# Instalar extensiones necesarias
-RUN apk add --no-cache \
-    bash libpng-dev libjpeg-turbo-dev freetype-dev oniguruma-dev \
-    && docker-php-ext-install pdo_mysql pdo_sqlite mbstring exif pcntl bcmath gd
+# Instalar Composer
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 WORKDIR /var/www
 
-# Copiar todos los archivos desde la carpeta backend/
+# Copiar archivos del proyecto
 COPY . .
 
-# Copiar vendor desde la etapa anterior
-COPY --from=vendor /app/vendor ./vendor
+# Instalar dependencias de Laravel
+RUN composer install --no-dev --prefer-dist --no-progress --no-interaction
 
-# Asegurar base de datos SQLite
+# Crear archivo de base de datos SQLite
 RUN mkdir -p database && touch database/database.sqlite
 
-# Permisos
-RUN chmod -R 755 /var/www && chown -R www-data:www-data /var/www
+# Asignar permisos adecuados
+RUN chown -R www-data:www-data /var/www && chmod -R 755 /var/www
 
 EXPOSE 8000
 
-CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8000"]
+# Comando por defecto
+CMD php artisan serve --host=0.0.0.0 --port=8000
+
