@@ -1,45 +1,32 @@
-# Etapa 1: Construcción de dependencias
+# Etapa 1: build de dependencias
 FROM composer:latest AS vendor
 
 WORKDIR /app
 COPY backend/composer.json backend/composer.lock ./
 RUN composer install --no-dev --prefer-dist --no-scripts --no-interaction
 
-# Etapa 2: Aplicación Laravel
-FROM php:8.2-apache
+# Etapa 2: Laravel + PHP
+FROM php:8.2-fpm
 
-# Instalar extensiones necesarias
+WORKDIR /var/www
+
+# Instalar dependencias necesarias
 RUN apt-get update && apt-get install -y \
     git unzip curl libpng-dev libjpeg-dev libfreetype6-dev libonig-dev libzip-dev zip \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install pdo pdo_mysql pdo_sqlite mbstring exif pcntl bcmath gd zip \
-    && a2enmod rewrite
+    && docker-php-ext-install pdo pdo_mysql pdo_sqlite mbstring exif pcntl bcmath gd zip
 
-# Configuración de Apache
-COPY backend/.docker/vhost.conf /etc/apache2/sites-available/000-default.conf
+# Copiar Composer desde el build anterior
+COPY --from=vendor /app/vendor /var/www/vendor
 
-# Copiar aplicación
-COPY backend /var/www/html
-COPY --from=vendor /app/vendor /var/www/html/vendor
+# Copiar el resto del proyecto
+COPY backend ./
 
-WORKDIR /var/www/html
+# Permisos y key de la app
+RUN chmod -R 777 storage bootstrap/cache \
+    && php artisan config:cache \
+    && php artisan route:cache
 
-# Crear archivo SQLite si no existe
-RUN touch database/database.sqlite
+EXPOSE 8000
+CMD php artisan serve --host=0.0.0.0 --port=8000
 
-# Asignar permisos
-RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache /var/www/html/database
-
-# Variables de entorno necesarias
-ENV APP_ENV=production
-ENV APP_KEY=base64:GENERAR_O_REEMPLAZAR
-ENV DB_CONNECTION=sqlite
-ENV DB_DATABASE=/var/www/html/database/database.sqlite
-
-# Ejecutar comandos de Laravel
-RUN php artisan config:clear && \
-    php artisan route:clear && \
-    php artisan view:clear && \
-    php artisan migrate --force
-
-EXPOSE 80
