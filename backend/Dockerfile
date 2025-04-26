@@ -1,30 +1,45 @@
-FROM php:8.2-fpm
+# Etapa 1: Construcción de dependencias
+FROM composer:latest AS vendor
 
-# Instalar dependencias del sistema
+WORKDIR /app
+COPY backend/composer.json backend/composer.lock ./
+RUN composer install --no-dev --prefer-dist --no-scripts --no-interaction
+
+# Etapa 2: Aplicación Laravel
+FROM php:8.2-apache
+
+# Instalar extensiones necesarias
 RUN apt-get update && apt-get install -y \
     git unzip curl libpng-dev libjpeg-dev libfreetype6-dev libonig-dev libzip-dev zip \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install pdo pdo_mysql pdo_sqlite mbstring exif pcntl bcmath gd zip
+    && docker-php-ext-install pdo pdo_mysql pdo_sqlite mbstring exif pcntl bcmath gd zip \
+    && a2enmod rewrite
 
-# Instalar Composer
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+# Configuración de Apache
+COPY backend/.docker/vhost.conf /etc/apache2/sites-available/000-default.conf
 
-WORKDIR /var/www
+# Copiar aplicación
+COPY backend /var/www/html
+COPY --from=vendor /app/vendor /var/www/html/vendor
 
-# Copiar archivos del proyecto
-COPY . .
+WORKDIR /var/www/html
 
-# Instalar dependencias de Laravel
-RUN composer install --no-dev --prefer-dist --no-progress --no-interaction
+# Crear archivo SQLite si no existe
+RUN touch database/database.sqlite
 
-# Crear archivo de base de datos SQLite
-RUN mkdir -p database && touch database/database.sqlite
+# Asignar permisos
+RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache /var/www/html/database
 
-# Asignar permisos adecuados
-RUN chown -R www-data:www-data /var/www && chmod -R 755 /var/www
+# Variables de entorno necesarias
+ENV APP_ENV=production
+ENV APP_KEY=base64:GENERAR_O_REEMPLAZAR
+ENV DB_CONNECTION=sqlite
+ENV DB_DATABASE=/var/www/html/database/database.sqlite
 
-EXPOSE 8000
+# Ejecutar comandos de Laravel
+RUN php artisan config:clear && \
+    php artisan route:clear && \
+    php artisan view:clear && \
+    php artisan migrate --force
 
-# Comando por defecto
-CMD php artisan serve --host=0.0.0.0 --port=8000
-
+EXPOSE 80
