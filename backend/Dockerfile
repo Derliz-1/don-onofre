@@ -1,19 +1,19 @@
 # Imagen base oficial PHP + Apache
 FROM php:8.2-apache
 
-# Instalamos extensiones necesarias
 RUN apt-get update && apt-get install -y \
     libpng-dev \
     libjpeg-dev \
     libfreetype6-dev \
     libzip-dev \
     libsqlite3-dev \
+    libonig-dev \
     zip \
     unzip \
     git \
-    curl \
-    && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install gd pdo pdo_mysql pdo_sqlite mbstring zip
+    curl && \
+    docker-php-ext-configure gd --with-freetype --with-jpeg && \
+    docker-php-ext-install gd pdo pdo_mysql pdo_sqlite mbstring zip
 
 # Copiamos la configuración personalizada de Apache
 COPY ./docker/apache.conf /etc/apache2/sites-available/000-default.conf
