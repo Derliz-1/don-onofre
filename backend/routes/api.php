@@ -72,3 +72,10 @@ Route::get('/crear-admin', function () {
         return response()->json(['error' => $e->getMessage()], 500);
     }
 });
+
+use Illuminate\Support\Facades\Artisan;
+
+Route::get('/migrar', function () {
+    Artisan::call('migrate', ['--force' => true]);
+    return response()->json(['message' => 'Migraciones ejecutadas ✅']);
+});
