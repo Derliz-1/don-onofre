@@ -4,6 +4,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Artisan;
 
 use App\Http\Controllers\API\ProductoController;
 use App\Http\Controllers\API\ClienteController;
@@ -34,9 +36,18 @@ Route::get('/ping', function () {
     return response()->json(['message' => 'API OK']);
 });
 
-Route::apiResource('productos', ProductoController::class);
-Route::apiResource('clientes', ClienteController::class);
-Route::get('/ordenes', [OrdenController::class, 'index']);
+// Rutas protegidas por token
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/admin/dashboard', [AdminController::class, 'resumen']);
+    Route::post('/productos', [ProductoController::class, 'store']);
+    Route::post('/productos/upload-imagen', [ProductoController::class, 'uploadImagen']);
+    Route::put('/productos/{producto}', [ProductoController::class, 'update']);
+    Route::delete('/productos/{producto}', [ProductoController::class, 'destroy']);
+});
+
+// Rutas públicas de clientes, productos y pagos
+Route::apiResource('productos', ProductoController::class)->only(['index', 'show']);
+Route::apiResource('clientes', ClienteController::class)->only(['store']);
 Route::apiResource('ordenes', OrdenController::class)->only(['store', 'show']);
 Route::post('ordenes/{id}/cancelar', [OrdenController::class, 'cancelar']);
 Route::get('/pagos', [PagoController::class, 'index']);
@@ -46,22 +57,11 @@ Route::post('pagos/{pago_id}/cancelar', [PagoController::class, 'cancelarPago'])
 Route::post('pagos/webhook', [PagoController::class, 'webhook']);
 Route::post('pagos/{referencia}/confirmar-simulado', [PagoController::class, 'confirmarPagoSimulado']);
 
-Route::middleware('auth:sanctum')->group(function () {
-    Route::get('/admin/dashboard', [AdminController::class, 'resumen']);
-
-    Route::post('/productos', [ProductoController::class, 'store']);
-    Route::post('/productos/upload-imagen', [ProductoController::class, 'uploadImagen']);
-    Route::put('/productos/{producto}', [ProductoController::class, 'update']);
-    Route::delete('/productos/{producto}', [ProductoController::class, 'destroy']);
-});
-
-use Illuminate\Support\Facades\Artisan;
-
+// 👉 Solo para primera vez (después de migrar y crear admin, vas a eliminar estas dos rutas)
 Route::get('/migrar', function () {
     Artisan::call('migrate', ['--force' => true]);
     return response()->json(['message' => 'Migraciones ejecutadas ✅']);
 });
-
 
 Route::get('/crear-admin', function () {
     try {
@@ -73,16 +73,8 @@ Route::get('/crear-admin', function () {
                 'is_admin' => true
             ]
         );
-
         return response()->json(['message' => 'Administrador creado ✅']);
     } catch (\Exception $e) {
         return response()->json(['error' => $e->getMessage()], 500);
     }
-});
-
-
-Route::get('/recompilar-rutas', function () {
-    Artisan::call('route:clear');
-    Artisan::call('route:cache');
-    return response()->json(['message' => 'Rutas recompiladas correctamente ✅']);
 });
