@@ -1,33 +1,47 @@
-# Usa PHP 8.2 oficial con Alpine (liviano)
-FROM php:8.2-fpm-alpine
+# Usa una imagen oficial de PHP con Apache
+FROM php:8.2-apache
 
-# Instala extensiones PHP necesarias
-RUN apk add --no-cache \
-    php-pdo php-pdo_mysql php-pdo_sqlite php-mbstring php-exif php-pcntl php-bcmath php-gd php-tokenizer php-ctype php-curl php-session php-openssl \
-    php-fileinfo php-zip php-simplexml php-dom php-xmlwriter php-xmlreader \
-    php-json php-iconv php-opcache \
-    oniguruma-dev libpng-dev libjpeg-turbo-dev freetype-dev zlib-dev zip unzip curl git
+# Instala dependencias necesarias
+RUN apt-get update && apt-get install -y \
+    libpng-dev \
+    libjpeg-dev \
+    libfreetype6-dev \
+    zip \
+    unzip \
+    git \
+    curl \
+    libonig-dev \
+    libzip-dev
 
-# Copia el proyecto (como estás en carpeta backend/ ya)
-WORKDIR /var/www
+# Extensiones PHP necesarias
+RUN docker-php-ext-configure gd --with-freetype --with-jpeg && \
+    docker-php-ext-install gd pdo pdo_mysql pdo_sqlite mbstring zip
 
-COPY . .
-
-# Instala Composer (desde la imagen oficial)
+# Instala Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Instala dependencias de Laravel
-RUN composer install --no-dev --prefer-dist --no-progress --no-interaction
+# Copia los archivos del backend al contenedor
+COPY . /var/www/html
 
-# Crea el archivo SQLite si no existe
-RUN mkdir -p database && touch database/database.sqlite
+# Configura permisos
+RUN chown -R www-data:www-data /var/www/html \
+    && chmod -R 755 /var/www/html/storage \
+    && chmod -R 755 /var/www/html/bootstrap/cache
 
-# Permisos correctos
-RUN chmod -R 775 storage bootstrap/cache database && \
-    chown -R www-data:www-data /var/www
+# Establece directorio de trabajo
+WORKDIR /var/www/html
 
-# Puerto que expone Laravel
-EXPOSE 8000
+# Copia configuración personalizada de Apache
+COPY ./backend/docker/apache.conf /etc/apache2/sites-available/000-default.conf
 
-# Comando para correr el servidor de Laravel
-CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8000"]
+# Habilita mod_rewrite de Apache (necesario para Laravel)
+RUN a2enmod rewrite
+
+# Instala dependencias PHP del proyecto
+RUN composer install --no-dev --prefer-dist --no-scripts --no-interaction
+
+# Expone el puerto 80
+EXPOSE 80
+
+# Comando para iniciar Apache
+CMD ["apache2-foreground"]
