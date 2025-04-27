@@ -15,6 +15,14 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import axios from 'axios'
 
+// ✅ Creamos instancia de axios usando VITE_API_URL
+const api = axios.create({
+  baseURL: import.meta.env.VITE_API_URL,
+  headers: {
+    'Content-Type': 'application/json'
+  }
+})
+
 const email = ref('')
 const password = ref('')
 const error = ref('')
@@ -22,7 +30,7 @@ const router = useRouter()
 
 const login = async () => {
   try {
-    const res = await axios.post('http://localhost:8000/api/login', { email: email.value, password: password.value })
+    const res = await api.post('/login', { email: email.value, password: password.value })
     localStorage.setItem('admin_token', res.data.token)
     router.push('/admin')
   } catch (err) {
