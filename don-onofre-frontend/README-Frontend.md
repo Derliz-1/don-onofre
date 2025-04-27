@@ -58,4 +58,3 @@ Acceder desde: [http://localhost:5173](http://localhost:5173)
 - `/views`: vistas principales.
 - `/router/index.js`: rutas.
 - `App.vue` y `main.js`: configuración general.
-Deploy forzando nueva URL del backend
