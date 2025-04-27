@@ -52,7 +52,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import api from '../api/api.js' // <== Importamos el archivo api.js CORRECTO
+import api from '../api.js' // <== Importamos el archivo api.js CORRECTO
 import ProductCard from '../components/ProductCard.vue'
 import FloatingCart from '../components/FloatingCart.vue'
 
