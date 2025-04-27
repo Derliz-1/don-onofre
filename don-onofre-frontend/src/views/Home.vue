@@ -51,8 +51,8 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
-import axios from 'axios'
+import { ref, computed, onMounted } from 'vue'
+import api from '../api/api.js' // <== Importamos el archivo api.js CORRECTO
 import ProductCard from '../components/ProductCard.vue'
 import FloatingCart from '../components/FloatingCart.vue'
 
@@ -70,13 +70,6 @@ const categorias = computed(() => {
   const todas = productos.value.map(p => p.categoria)
   return [...new Set(todas.filter(Boolean))]
 })
-
-const reiniciarProductos = async () => {
-  productos.value = []
-  pagina.value = 1
-  fin.value = false
-  await cargarProductos()
-}
 
 const total = computed(() => carrito.value.reduce((suma, item) => suma + item.precio * item.cantidad, 0))
 const totalItems = computed(() => carrito.value.reduce((n, item) => n + item.cantidad, 0))
@@ -97,7 +90,6 @@ const agregarAlCarrito = (producto) => {
     } else {
       carrito.value.push({ ...producto, cantidad: 1 })
     }
-    // Descontar stock
     const prod = productos.value.find(p => p.id === producto.id)
     if (prod) {
       prod.stock--
@@ -127,12 +119,19 @@ const handleCerrarModal = () => {
   mostrarModal.value = false
 }
 
+const reiniciarProductos = async () => {
+  productos.value = []
+  pagina.value = 1
+  fin.value = false
+  await cargarProductos()
+}
+
 const cargarProductos = async () => {
   if (cargando.value || fin.value) return
 
   cargando.value = true
   try {
-    const res = await axios.get('http://localhost:8000/api/productos', {
+    const res = await api.get('/productos', {
       params: { page: pagina.value, per_page: perPage }
     })
 
@@ -149,12 +148,10 @@ const cargarProductos = async () => {
   cargando.value = false
 }
 
-// Guardar carrito en localStorage
 const guardarCarrito = () => {
   localStorage.setItem('carrito', JSON.stringify(carrito.value))
 }
 
-// Recuperar carrito de localStorage al cargar la página
 const recuperarCarrito = () => {
   const guardado = localStorage.getItem('carrito')
   if (guardado) {
@@ -169,98 +166,22 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background-color: #f8f9fa;
-  padding: 10px 20px;
-  flex-wrap: wrap;
-}
-.logo {
-  font-size: 1.8rem;
-  font-weight: bold;
-}
-.buscador-carrito {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-}
-.buscador-carrito input {
-  padding: 6px 10px;
-  font-size: 1rem;
-  width: 250px;
-}
-.btn-carrito {
-  background-color: #28a745;
-  color: white;
-  padding: 10px 12px;
-  border: none;
-  border-radius: 6px;
-  font-weight: bold;
-  cursor: pointer;
-}
-.btn-carrito:hover {
-  background-color: #218838;
-}
-.ver-mas {
-  margin: 20px auto;
-  display: block;
-  padding: 10px 20px;
-  font-weight: bold;
-  background-color: #007bff;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-}
-.ver-mas:hover {
-  background-color: #0056b3;
-}
-.productos {
-  flex: 1;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  padding: 12px;
-  justify-content: center;
-}
-.productos > * {
-  width: calc(33.333% - 20px);
-  max-width: 250px;
-}
-.sidebar {
-  width: 200px;
-  padding: 20px;
-  background: #f8f9fa;
-}
-.sidebar ul {
-  list-style: none;
-  padding: 0;
-}
-.sidebar li {
-  margin-bottom: 10px;
-  cursor: pointer;
-}
-.sidebar .active {
-  font-weight: bold;
-  color: #007bff;
-}
-.main {
-  display: flex;
-}
-.ver-menos {
-  margin: 10px auto 30px;
-  display: block;
-  padding: 8px 20px;
-  font-weight: bold;
-  background-color: #dc3545;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-}
-.ver-menos:hover {
-  background-color: #bd2130;
-}
+/* Tu mismo CSS que ya tenías: lo dejamos tal cual */
+.header { display: flex; justify-content: space-between; align-items: center; background-color: #f8f9fa; padding: 10px 20px; flex-wrap: wrap; }
+.logo { font-size: 1.8rem; font-weight: bold; }
+.buscador-carrito { display: flex; gap: 10px; align-items: center; }
+.buscador-carrito input { padding: 6px 10px; font-size: 1rem; width: 250px; }
+.btn-carrito { background-color: #28a745; color: white; padding: 10px 12px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
+.btn-carrito:hover { background-color: #218838; }
+.ver-mas { margin: 20px auto; display: block; padding: 10px 20px; font-weight: bold; background-color: #007bff; color: white; border: none; border-radius: 6px; cursor: pointer; }
+.ver-mas:hover { background-color: #0056b3; }
+.productos { flex: 1; display: flex; flex-wrap: wrap; gap: 12px; padding: 12px; justify-content: center; }
+.productos > * { width: calc(33.333% - 20px); max-width: 250px; }
+.sidebar { width: 200px; padding: 20px; background: #f8f9fa; }
+.sidebar ul { list-style: none; padding: 0; }
+.sidebar li { margin-bottom: 10px; cursor: pointer; }
+.sidebar .active { font-weight: bold; color: #007bff; }
+.main { display: flex; }
+.ver-menos { margin: 10px auto 30px; display: block; padding: 8px 20px; font-weight: bold; background-color: #dc3545; color: white; border: none; border-radius: 6px; cursor: pointer; }
+.ver-menos:hover { background-color: #bd2130; }
 </style>
