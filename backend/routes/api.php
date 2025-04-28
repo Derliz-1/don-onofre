@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\DB;
 
 use App\Http\Controllers\API\ProductoController;
 use App\Http\Controllers\API\ClienteController;
@@ -58,3 +59,22 @@ Route::post('pagos/{orden_id}/generar', [PagoController::class, 'generarLinkPago
 Route::post('pagos/{pago_id}/cancelar', [PagoController::class, 'cancelarPago']);
 Route::post('pagos/webhook', [PagoController::class, 'webhook']);
 Route::post('pagos/{referencia}/confirmar-simulado', [PagoController::class, 'confirmarPagoSimulado']);
+
+
+Route::get('/ver-error', function () {
+    try {
+        DB::connection()->getPdo();
+        $tables = DB::select('SELECT name FROM sqlite_master WHERE type="table"');
+        $tableNames = array_map(fn($table) => $table->name, $tables);
+
+        return response()->json([
+            'status' => 'ok',
+            'tables' => $tableNames
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'status' => 'error',
+            'message' => $e->getMessage()
+        ], 500);
+    }
+});
