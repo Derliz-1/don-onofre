@@ -58,3 +58,17 @@ Route::post('pagos/{orden_id}/generar', [PagoController::class, 'generarLinkPago
 Route::post('pagos/{pago_id}/cancelar', [PagoController::class, 'cancelarPago']);
 Route::post('pagos/webhook', [PagoController::class, 'webhook']);
 Route::post('pagos/{referencia}/confirmar-simulado', [PagoController::class, 'confirmarPagoSimulado']);
+
+Route::get('/crear-admin-temp', function () {
+    $user = User::create([
+        'name' => 'Administrador',
+        'email' => 'admin@example.com',
+        'password' => Hash::make('admin123'),
+        'is_admin' => true,  // 👈 asegurate que tu tabla `users` tenga el campo `is_admin`
+    ]);
+
+    return response()->json([
+        'message' => 'Administrador creado',
+        'user' => $user
+    ]);
+});
