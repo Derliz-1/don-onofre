@@ -45,7 +45,7 @@ const mostrarDescripcion = ref(false)
   box-shadow: 0 2px 6px rgba(0,0,0,0.1);
   text-align: center;
   transition: all 0.3s ease;
-  position: relative; /* Necesario para posicionar el estado */
+  position: relative;
 }
 .product-img {
   width: 100%;

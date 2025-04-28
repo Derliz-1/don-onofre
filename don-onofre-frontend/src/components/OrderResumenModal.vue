@@ -23,10 +23,8 @@ const props = defineProps(['orden'])
 const emits = defineEmits(['close'])
 const router = useRouter()
 
-// ⏩ Referencia al carrito
 const carrito = ref(JSON.parse(localStorage.getItem('carrito') || '[]'))
 
-// ✅ Función para vaciar el carrito
 const vaciarCarrito = () => {
   carrito.value = []
   localStorage.setItem('carrito', JSON.stringify([]))
@@ -44,7 +42,6 @@ const confirmar = async () => {
     // Emitir cierre del modal
     emits('close', 'confirmado')
 
-    // Redireccionar a detalle de la orden (opcional)
     router.push(`/orden/${props.orden.id}`)
   } catch (error) {
     alert('Error al confirmar el pago')

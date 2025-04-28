@@ -41,7 +41,7 @@ const error = ref('')
 
 onMounted(async () => {
   try {
-    const res = await axios.get(`http://localhost:8000/api/ordenes/${route.params.id}`)
+    const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/ordenes/${route.params.id}`)
     orden.value = res.data
   } catch (err) {
     error.value = 'No se pudo cargar la orden.'
