@@ -1,7 +1,7 @@
-# Etapa de construcción
-FROM php:8.2-apache as builder
+# Usa imagen oficial PHP + Apache
+FROM php:8.2-apache
 
-# Instalar dependencias necesarias
+# Instala extensiones necesarias
 RUN apt-get update && apt-get install -y \
     libpng-dev \
     libjpeg-dev \
@@ -14,40 +14,24 @@ RUN apt-get update && apt-get install -y \
     git \
     curl
 
-# Configurar GD
-RUN docker-php-ext-configure gd --with-freetype --with-jpeg
+# Configurar e instalar extensiones PHP
+RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install gd pdo pdo_mysql pdo_sqlite mbstring zip
 
-# Instalar extensiones de PHP
-RUN docker-php-ext-install gd pdo pdo_mysql pdo_sqlite mbstring zip
+# Copiamos configuración apache
+COPY ./docker/apache.conf /etc/apache2/sites-available/000-default.conf
 
-# Copiar archivos del proyecto
+# Copiamos todo el proyecto
 COPY . /var/www/html
 
-# Ir a carpeta del proyecto
-WORKDIR /var/www/html
+# Permisos correctos
+RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 
-# Instalar dependencias de PHP (composer install)
-RUN curl -sS https://getcomposer.org/installer | php && \
-    mv composer.phar /usr/local/bin/composer && \
-    composer install --no-dev --optimize-autoloader --no-interaction
-
-# Crear carpeta de base de datos SQLite
-RUN mkdir -p /var/www/database && touch /var/www/database/database.sqlite
-
-# Dar permisos a Laravel
-RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache /var/www/database
-
-# Activar mod_rewrite de Apache
+# Activar módulo rewrite
 RUN a2enmod rewrite
 
-# Migrar base de datos automáticamente
-RUN php artisan migrate --force
-
-# Configurar permisos correctos otra vez
-RUN chown -R www-data:www-data /var/www/html
-
-# Exponer el puerto
+# Exponemos el puerto
 EXPOSE 80
 
-# Comando de inicio
-CMD ["apache2-foreground"]
+# NUEVO: Comando de inicio corregido (migra + arranca apache)
+CMD php artisan migrate --force && apache2-foreground
