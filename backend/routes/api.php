@@ -13,6 +13,7 @@ use App\Http\Controllers\API\OrdenController;
 use App\Http\Controllers\API\PagoController;
 use App\Http\Controllers\API\AdminController;
 
+// LOGIN de Administrador
 Route::post('/login', function (Request $request) {
     $credentials = $request->only('email', 'password');
 
@@ -22,7 +23,7 @@ Route::post('/login', function (Request $request) {
 
     $user = User::where('email', $request->email)->first();
 
-    if (!$user->is_admin) {
+    if (!$user || !$user->is_admin) {
         return response()->json(['message' => 'No autorizado'], 403);
     }
 
@@ -32,11 +33,12 @@ Route::post('/login', function (Request $request) {
     ]);
 });
 
+// Verificar API Online
 Route::get('/ping', function () {
     return response()->json(['message' => 'API OK']);
 });
 
-// Rutas protegidas por token
+// RUTAS PROTEGIDAS (solo con token válido)
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/admin/dashboard', [AdminController::class, 'resumen']);
     Route::post('/productos', [ProductoController::class, 'store']);
@@ -45,7 +47,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/productos/{producto}', [ProductoController::class, 'destroy']);
 });
 
-// Rutas públicas de clientes, productos y pagos
+// RUTAS PÚBLICAS
 Route::apiResource('productos', ProductoController::class)->only(['index', 'show']);
 Route::apiResource('clientes', ClienteController::class)->only(['store']);
 Route::apiResource('ordenes', OrdenController::class)->only(['store', 'show']);
@@ -56,25 +58,3 @@ Route::post('pagos/{orden_id}/generar', [PagoController::class, 'generarLinkPago
 Route::post('pagos/{pago_id}/cancelar', [PagoController::class, 'cancelarPago']);
 Route::post('pagos/webhook', [PagoController::class, 'webhook']);
 Route::post('pagos/{referencia}/confirmar-simulado', [PagoController::class, 'confirmarPagoSimulado']);
-
-// 👉 Solo para primera vez (después de migrar y crear admin, vas a eliminar estas dos rutas)
-Route::get('/migrar', function () {
-    Artisan::call('migrate', ['--force' => true]);
-    return response()->json(['message' => 'Migraciones ejecutadas ✅']);
-});
-
-Route::get('/crear-admin', function () {
-    try {
-        $admin = User::firstOrCreate(
-            ['email' => 'admin@example.com'],
-            [
-                'name' => 'Admin',
-                'password' => Hash::make('admin123'),
-                'is_admin' => true
-            ]
-        );
-        return response()->json(['message' => 'Administrador creado ✅']);
-    } catch (\Exception $e) {
-        return response()->json(['error' => $e->getMessage()], 500);
-    }
-});
