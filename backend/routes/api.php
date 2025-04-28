@@ -5,8 +5,6 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Artisan;
-use Illuminate\Support\Facades\DB;
 
 use App\Http\Controllers\API\ProductoController;
 use App\Http\Controllers\API\ClienteController;
@@ -39,7 +37,7 @@ Route::get('/ping', function () {
     return response()->json(['message' => 'API OK']);
 });
 
-// RUTAS PROTEGIDAS (solo con token válido)
+// RUTAS PROTEGIDAS (requieren token válido)
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/admin/dashboard', [AdminController::class, 'resumen']);
     Route::post('/productos', [ProductoController::class, 'store']);
@@ -53,28 +51,10 @@ Route::apiResource('productos', ProductoController::class)->only(['index', 'show
 Route::apiResource('clientes', ClienteController::class)->only(['store']);
 Route::apiResource('ordenes', OrdenController::class)->only(['store', 'show']);
 Route::post('ordenes/{id}/cancelar', [OrdenController::class, 'cancelar']);
+
 Route::get('/pagos', [PagoController::class, 'index']);
 Route::get('pagos/{orden_id}', [PagoController::class, 'show']);
 Route::post('pagos/{orden_id}/generar', [PagoController::class, 'generarLinkPago']);
 Route::post('pagos/{pago_id}/cancelar', [PagoController::class, 'cancelarPago']);
 Route::post('pagos/webhook', [PagoController::class, 'webhook']);
 Route::post('pagos/{referencia}/confirmar-simulado', [PagoController::class, 'confirmarPagoSimulado']);
-
-
-Route::get('/ver-error', function () {
-    try {
-        DB::connection()->getPdo();
-        $tables = DB::select('SELECT name FROM sqlite_master WHERE type="table"');
-        $tableNames = array_map(fn($table) => $table->name, $tables);
-
-        return response()->json([
-            'status' => 'ok',
-            'tables' => $tableNames
-        ]);
-    } catch (\Exception $e) {
-        return response()->json([
-            'status' => 'error',
-            'message' => $e->getMessage()
-        ], 500);
-    }
-});
