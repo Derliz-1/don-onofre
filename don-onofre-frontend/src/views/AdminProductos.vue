@@ -1,66 +1,74 @@
 <template>
   <div class="admin-productos">
     <AdminNav />
-    <h2>📄 Productos</h2>
+    <h2 class="titulo">📄 Gestión de Productos</h2>
 
-    <input type="text" v-model="busqueda" placeholder="🔍 Buscar producto por nombre..." />
+    <div class="buscador">
+      <input
+        type="text"
+        v-model="busqueda"
+        placeholder="🔍 Buscar producto por nombre..."
+      />
+    </div>
 
-    <!-- Formulario de creación/edición -->
-    <form @submit.prevent="guardarProducto">
-      <label>
-        Nombre:
+    <form @submit.prevent="guardarProducto" class="formulario">
+      <div class="grupo">
+        <label>Nombre:</label>
         <input v-model="form.nombre" type="text" required />
-      </label>
-
-      <label>
-        Descripción:
-        <input v-model="form.descripcion" type="text" />
-      </label>
-
-      <label>
-        Precio:
-        <input v-model.number="form.precio" type="number" required />
-      </label>
-
-      <label>
-        Stock:
-        <input v-model.number="form.stock" type="number" required />
-      </label>
-
-      <label>
-        Imagen:
-        <input type="file" @change="handleFileUpload" accept="image/*" />
-      </label>
-
-      <div v-if="form.imagen_url">
-        <img :src="form.imagen_url" alt="Preview" width="100" style="margin-top: 10px" />
       </div>
 
-      <label><input type="checkbox" v-model="form.activo" /> Activo</label>
-      <label><input type="checkbox" v-model="form.disponible" /> Disponible</label>
-      <label><input type="checkbox" v-model="form.agotado" /> Agotado</label>
+      <div class="grupo">
+        <label>Descripción:</label>
+        <input v-model="form.descripcion" type="text" />
+      </div>
 
-      <button type="submit">{{ editando ? 'Actualizar' : 'Crear' }}</button>
-      <button v-if="editando" type="button" @click="cancelarEdicion">Cancelar</button>
+      <div class="grupo">
+        <label>Precio:</label>
+        <input v-model.number="form.precio" type="number" required />
+      </div>
+
+      <div class="grupo">
+        <label>Stock:</label>
+        <input v-model.number="form.stock" type="number" required />
+      </div>
+
+      <div class="grupo">
+        <label>Imagen:</label>
+        <input type="file" @change="handleFileUpload" accept="image/*" />
+      </div>
+
+      <div v-if="form.imagen_url" class="preview-imagen">
+        <img :src="form.imagen_url" alt="Preview" />
+      </div>
+
+      <div class="grupo-checkbox">
+        <label><input type="checkbox" v-model="form.activo" /> Activo</label>
+        <label><input type="checkbox" v-model="form.disponible" /> Disponible</label>
+        <label><input type="checkbox" v-model="form.agotado" /> Agotado</label>
+      </div>
+
+      <div class="botones-formulario">
+        <button type="submit">{{ editando ? 'Actualizar' : 'Crear' }}</button>
+        <button v-if="editando" type="button" @click="cancelarEdicion" class="cancelar">Cancelar</button>
+      </div>
     </form>
 
     <div v-if="errores.length" class="errores">
       <p v-for="error in errores" :key="error" class="error">{{ error }}</p>
     </div>
 
-    <ul>
+    <ul class="lista-productos">
       <li v-for="producto in productosFiltrados" :key="producto.id">
-        <strong>{{ producto.nombre }}</strong> - Gs. {{ producto.precio }} - Stock: {{ producto.stock }} -
-        <span :style="{ color: producto.activo ? 'green' : 'red' }">
+        <strong>{{ producto.nombre }}</strong> - Gs. {{ producto.precio.toLocaleString() }} - Stock: {{ producto.stock }}
+        <span :class="{ activo: producto.activo, inactivo: !producto.activo }">
           {{ producto.activo ? 'Activo' : 'Inactivo' }}
         </span>
-
-        <!-- Botones -->
-        <button @click="toggleActivo(producto)">
-          {{ producto.activo ? 'Desactivar' : 'Activar' }}
-        </button>
-
-        <button @click="cargarProducto(producto)">✏ Editar</button>
+        <div class="acciones">
+          <button @click="toggleActivo(producto)">
+            {{ producto.activo ? 'Desactivar' : 'Activar' }}
+          </button>
+          <button @click="cargarProducto(producto)">✏ Editar</button>
+        </div>
       </li>
     </ul>
   </div>
@@ -90,7 +98,7 @@ const form = ref({
 const cargarProductos = async () => {
   try {
     const res = await api.get('/productos?admin=true')
-    productos.value = (res.data.productos || []) // Fijate que ahora es res.data.productos
+    productos.value = res.data.productos || []
   } catch (err) {
     errores.value = ['Error al cargar productos']
     console.error(err)
@@ -179,7 +187,8 @@ const handleFileUpload = async (event) => {
         'Content-Type': 'multipart/form-data'
       }
     })
-    form.value.imagen_url = res.data.url
+    // Corrección de la URL
+    form.value.imagen_url = import.meta.env.VITE_API_URL + res.data.url
   } catch (err) {
     errores.value = ['Error al subir la imagen']
     console.error(err)
@@ -191,41 +200,104 @@ onMounted(cargarProductos)
 
 <style scoped>
 .admin-productos {
-  max-width: 700px;
-  margin: auto;
+  max-width: 800px;
+  margin: 30px auto;
+  padding: 20px;
+  background: #ffffff;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
-form {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+.titulo {
+  text-align: center;
+  margin-bottom: 20px;
+  color: #007bff;
+}
+.buscador {
   margin-bottom: 20px;
 }
-input[type='checkbox'] {
-  margin-right: 6px;
+.buscador input {
+  width: 100%;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+}
+.formulario {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 30px;
+}
+.grupo {
+  display: flex;
+  flex-direction: column;
+}
+.grupo input[type="text"],
+.grupo input[type="number"],
+.grupo input[type="file"] {
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+.grupo-checkbox {
+  display: flex;
+  gap: 10px;
+}
+.preview-imagen {
+  margin-top: 10px;
+}
+.preview-imagen img {
+  width: 100px;
+  height: auto;
+  border-radius: 8px;
+}
+.botones-formulario {
+  display: flex;
+  gap: 10px;
+}
+button {
+  padding: 10px 15px;
+  border: none;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+}
+button[type="submit"] {
+  background: #28a745;
+  color: white;
+}
+button.cancelar {
+  background: #dc3545;
+  color: white;
+}
+.lista-productos {
+  list-style: none;
+  padding: 0;
+}
+.lista-productos li {
+  background: #f8f9fa;
+  margin-bottom: 10px;
+  padding: 12px;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+.lista-productos .activo {
+  color: green;
+  font-weight: bold;
+}
+.lista-productos .inactivo {
+  color: red;
+  font-weight: bold;
+}
+.acciones {
+  margin-top: 10px;
+  display: flex;
+  gap: 10px;
 }
 .errores {
-  margin-top: 10px;
+  margin-top: 20px;
   color: red;
 }
 .error {
   font-size: 14px;
-}
-ul {
-  list-style: none;
-  padding-left: 0;
-}
-li {
-  border-bottom: 1px solid #ccc;
-  padding: 10px 0;
-}
-button {
-  margin-left: 8px;
-}
-input[type='text'],
-input[type='number'] {
-  margin-top: 4px;
-  margin-bottom: 8px;
-  padding: 6px 8px;
-  width: 100%;
 }
 </style>

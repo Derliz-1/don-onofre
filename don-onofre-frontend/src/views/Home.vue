@@ -166,22 +166,144 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/* Tu mismo CSS que ya tenías: lo dejamos tal cual */
-.header { display: flex; justify-content: space-between; align-items: center; background-color: #f8f9fa; padding: 10px 20px; flex-wrap: wrap; }
-.logo { font-size: 1.8rem; font-weight: bold; }
-.buscador-carrito { display: flex; gap: 10px; align-items: center; }
-.buscador-carrito input { padding: 6px 10px; font-size: 1rem; width: 250px; }
-.btn-carrito { background-color: #28a745; color: white; padding: 10px 12px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
-.btn-carrito:hover { background-color: #218838; }
-.ver-mas { margin: 20px auto; display: block; padding: 10px 20px; font-weight: bold; background-color: #007bff; color: white; border: none; border-radius: 6px; cursor: pointer; }
-.ver-mas:hover { background-color: #0056b3; }
-.productos { flex: 1; display: flex; flex-wrap: wrap; gap: 12px; padding: 12px; justify-content: center; }
-.productos > * { width: calc(33.333% - 20px); max-width: 250px; }
-.sidebar { width: 200px; padding: 20px; background: #f8f9fa; }
-.sidebar ul { list-style: none; padding: 0; }
-.sidebar li { margin-bottom: 10px; cursor: pointer; }
-.sidebar .active { font-weight: bold; color: #007bff; }
-.main { display: flex; }
-.ver-menos { margin: 10px auto 30px; display: block; padding: 8px 20px; font-weight: bold; background-color: #dc3545; color: white; border: none; border-radius: 6px; cursor: pointer; }
-.ver-menos:hover { background-color: #bd2130; }
+.layout {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* HEADER */
+.header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #f8f9fa;
+  padding: 10px 20px;
+}
+.logo {
+  font-size: 1.8rem;
+  font-weight: bold;
+  color: #007bff;
+}
+.buscador-carrito {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-top: 10px;
+}
+.buscador-carrito input {
+  padding: 8px 12px;
+  font-size: 1rem;
+  width: 250px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+.btn-carrito {
+  background-color: #28a745;
+  color: white;
+  padding: 10px 14px;
+  border: none;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+.btn-carrito:hover {
+  background-color: #218838;
+}
+
+/* MAIN */
+.main {
+  display: flex;
+  flex: 1;
+  flex-wrap: wrap;
+  margin: 20px;
+}
+
+/* SIDEBAR */
+.sidebar {
+  width: 200px;
+  padding: 20px;
+  background: #f1f3f5;
+  border-radius: 10px;
+  margin-bottom: 20px;
+}
+.sidebar h3 {
+  margin-bottom: 10px;
+}
+.sidebar ul {
+  list-style: none;
+  padding: 0;
+}
+.sidebar li {
+  margin-bottom: 10px;
+  cursor: pointer;
+  padding: 6px 10px;
+  border-radius: 6px;
+  transition: background 0.3s;
+}
+.sidebar li:hover {
+  background: #e9ecef;
+}
+.sidebar .active {
+  font-weight: bold;
+  color: #007bff;
+  background: #dee2e6;
+}
+
+/* PRODUCTOS */
+.productos {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 16px;
+  padding: 12px;
+}
+
+/* BOTONES */
+.ver-mas, .ver-menos {
+  margin: 20px auto;
+  display: block;
+  padding: 10px 20px;
+  font-weight: bold;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+.ver-mas:hover {
+  background-color: #0056b3;
+}
+.ver-menos {
+  background-color: #dc3545;
+}
+.ver-menos:hover {
+  background-color: #bd2130;
+}
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .buscador-carrito {
+    width: 100%;
+    margin-top: 10px;
+    justify-content: flex-start;
+  }
+  .sidebar {
+    width: 100%;
+    margin-bottom: 20px;
+  }
+  .main {
+    flex-direction: column;
+  }
+  .productos {
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  }
+}
 </style>

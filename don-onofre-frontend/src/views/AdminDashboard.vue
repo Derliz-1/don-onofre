@@ -3,42 +3,61 @@
     <AdminNav />
 
     <div v-if="mostrarDashboard">
-      <h2>🔄 Dashboard</h2>
+      <h2 class="titulo">🔄 Dashboard</h2>
 
       <div class="stats">
-        <div class="card" @click="seleccionarFiltro('todas')">
-          Total Órdenes: {{ resumen.total_ordenes }}
+        <div
+          class="card card-todas"
+          @click="seleccionarFiltro('todas')"
+        >
+          Total Órdenes
+          <span>{{ resumen.total_ordenes }}</span>
         </div>
-        <div class="card" @click="seleccionarFiltro('pagadas')">
-          Pagadas: {{ resumen.pagadas }}
+
+        <div
+          class="card card-pagadas"
+          @click="seleccionarFiltro('pagadas')"
+        >
+          Pagadas
+          <span>{{ resumen.pagadas }}</span>
         </div>
-        <div class="card" @click="seleccionarFiltro('pendientes')">
-          Pendientes: {{ resumen.pendientes }}
+
+        <div
+          class="card card-pendientes"
+          @click="seleccionarFiltro('pendientes')"
+        >
+          Pendientes
+          <span>{{ resumen.pendientes }}</span>
         </div>
-        <div class="card" @click="seleccionarFiltro('canceladas')">
-          Canceladas: {{ resumen.canceladas }}
+
+        <div
+          class="card card-canceladas"
+          @click="seleccionarFiltro('canceladas')"
+        >
+          Canceladas
+          <span>{{ resumen.canceladas }}</span>
         </div>
-        <div class="card">
-          Recaudado: Gs. {{ resumen.recaudado }}
+
+        <div class="card card-recaudado">
+          Recaudado
+          <span>Gs. {{ resumen.recaudado.toLocaleString() }}</span>
         </div>
       </div>
 
-      <!-- Listado dinámico -->
       <div v-if="ordenesFiltradas.length">
         <h3>📝 Órdenes {{ filtroTexto }}</h3>
-        <ul>
+        <ul class="ordenes">
           <li v-for="orden in ordenesFiltradas" :key="orden.id">
-            #{{ orden.id }} - {{ orden.estado }} - {{ orden.cliente.nombre_completo }} - Gs. {{ orden.total }}
+            #{{ orden.id }} - {{ orden.estado }} - {{ orden.cliente.nombre }} {{ orden.cliente.apellido }} - Gs. {{ orden.total.toLocaleString() }}
           </li>
         </ul>
       </div>
 
-      <!-- Si no hay órdenes filtradas -->
       <div v-else>
         <h3>Últimos pedidos:</h3>
-        <ul>
+        <ul class="ordenes">
           <li v-for="orden in resumen.ultimos_pedidos || []" :key="orden.id">
-            #{{ orden.id }} - {{ orden.estado }} - {{ orden.cliente.nombre_completo }} - Gs. {{ orden.total }}
+            #{{ orden.id }} - {{ orden.estado }} - {{ orden.cliente.nombre }} {{ orden.cliente.apellido }} - Gs. {{ orden.total.toLocaleString() }}
           </li>
         </ul>
       </div>
@@ -60,12 +79,10 @@ const route = useRoute()
 
 const mostrarDashboard = computed(() => route.path === '/admin')
 
-// Función para seleccionar el filtro
 const seleccionarFiltro = (tipo) => {
   filtro.value = tipo
 }
 
-// Mapeo de filtros para traducir
 const estadoMap = {
   pagadas: 'pagado',
   pendientes: 'pendiente',
@@ -74,7 +91,6 @@ const estadoMap = {
 
 const ordenesFiltradas = computed(() => {
   if (!filtro.value || filtro.value === 'todas') return resumen.value.todas || []
-  
   const estadoFiltro = estadoMap[filtro.value]
   return (resumen.value.todas || []).filter(orden => orden.estado === estadoFiltro)
 })
@@ -98,38 +114,74 @@ onMounted(async () => {
 
 <style scoped>
 .admin {
-  max-width: 800px;
-  margin: auto;
+  max-width: 1000px;
+  margin: 20px auto;
   padding: 20px;
 }
-.stats {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
+.titulo {
+  text-align: center;
+  font-size: 28px;
   margin-bottom: 20px;
+  color: #333;
+}
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 15px;
+  margin-bottom: 30px;
 }
 .card {
-  background: #eee;
-  padding: 10px;
-  border-radius: 6px;
-  flex: 1;
+  background: #ffffff;
+  padding: 15px;
+  border-radius: 10px;
   text-align: center;
-  cursor: pointer;
   font-weight: bold;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  cursor: pointer;
+  transition: transform 0.3s, background 0.3s;
+}
+.card span {
+  display: block;
+  font-size: 20px;
+  margin-top: 10px;
+  font-weight: normal;
 }
 .card:hover {
-  background: #ddd;
+  transform: translateY(-5px);
 }
-ul {
+.card-todas {
+  background: linear-gradient(to right, #00c6ff, #0072ff);
+  color: white;
+}
+.card-pagadas {
+  background: linear-gradient(to right, #00b09b, #96c93d);
+  color: white;
+}
+.card-pendientes {
+  background: linear-gradient(to right, #f7971e, #ffd200);
+  color: white;
+}
+.card-canceladas {
+  background: linear-gradient(to right, #f953c6, #b91d73);
+  color: white;
+}
+.card-recaudado {
+  background: linear-gradient(to right, #f12711, #f5af19);
+  color: white;
+}
+.ordenes {
   list-style: none;
   padding: 0;
 }
-li {
-  background: #fafafa;
-  margin-bottom: 8px;
-  padding: 10px;
-  border-radius: 6px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+.ordenes li {
+  background: #f9f9f9;
+  margin-bottom: 10px;
+  padding: 12px;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.08);
+  transition: background 0.3s;
+}
+.ordenes li:hover {
+  background: #f0f0f0;
 }
 </style>
