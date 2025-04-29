@@ -17,6 +17,7 @@ const routes = [
     component: AdminDashboard,
     meta: { requiresAuth: true },
     children: [
+      { path: '', component: AdminOrdenes },
       { path: 'productos', component: AdminProductos },
       { path: 'ordenes', component: AdminOrdenes },
       { path: 'pagos', component: AdminPagos },
