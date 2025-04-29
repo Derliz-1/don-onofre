@@ -83,6 +83,7 @@ const compartirWhatsapp = () => {
 onMounted(async () => {
   try {
     const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/ordenes/${route.params.id}`)
+    console.log('Respuesta orden:', res.data) // 👈 Para ver si trae bien
     orden.value = res.data
   } catch (err) {
     console.error('Error cargando orden:', err)

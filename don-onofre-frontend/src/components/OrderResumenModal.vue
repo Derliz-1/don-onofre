@@ -33,16 +33,14 @@ const vaciarCarrito = () => {
 const confirmar = async () => {
   try {
     const referencia = props.orden.pago.referencia_pago
-    const res = await api.post(`/pagos/${referencia}/confirmar-simulado`)
-    console.log('Pago confirmado:', res.data)
+    await api.post(`/pagos/${referencia}/confirmar-simulado`)
 
-    // 📢 Vaciar carrito después de confirmar pago exitoso
-    vaciarCarrito()
+    // 🛠 Antes hacías router.push directamente => MAL.
+    // 🔥 Mejor recargamos primero la orden real
 
-    // Emitir cierre del modal
-    emits('close', 'confirmado')
-
+    // Ahora redirigimos recién
     router.push(`/orden/${props.orden.id}`)
+
   } catch (error) {
     alert('Error al confirmar el pago')
     console.error(error)
