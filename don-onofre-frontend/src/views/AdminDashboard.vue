@@ -23,19 +23,27 @@
         </div>
       </div>
 
-      <div>
-        <h3 v-if="filtro.value !== 'todas'">Órdenes {{ filtroTexto }}</h3>
-        <h3 v-else>Últimos pedidos</h3>
-
+      <div v-if="ordenesFiltradas.length">
+        <h3>📝 Órdenes {{ filtroTexto }}</h3>
         <ul class="lista">
           <li v-for="orden in ordenesFiltradas" :key="orden.id">
-            #{{ orden.id }} - {{ orden.estado }} - {{ orden.cliente?.nombre_completo || 'Sin Cliente' }} - Gs. {{ orden.total ? orden.total.toLocaleString() : 0 }}
+            #{{ orden.id }} - {{ orden.estado }} - {{ orden.cliente?.nombre_completo || 'Sin Cliente' }} - Gs. {{ orden.total?.toLocaleString() || 0 }}
+          </li>
+        </ul>
+      </div>
+
+      <div v-else>
+        <h3>Últimos pedidos:</h3>
+        <ul class="lista">
+          <li v-for="orden in resumen.ultimos_pedidos || []" :key="orden.id">
+            #{{ orden.id }} - {{ orden.estado }} - {{ orden.cliente?.nombre_completo || 'Sin Cliente' }} - Gs. {{ orden.total?.toLocaleString() || 0 }}
           </li>
         </ul>
       </div>
     </div>
 
-    <router-view />
+    <!-- Aquí renderizamos los subcomponentes de /admin/... -->
+    <router-view v-else />
   </div>
 </template>
 
@@ -43,6 +51,7 @@
 import { ref, onMounted, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import api from '../api/admin'
+import AdminNav from '../components/AdminNav.vue'
 
 const resumen = ref({})
 const filtro = ref('todas')
@@ -50,7 +59,6 @@ const route = useRoute()
 
 const mostrarDashboard = computed(() => route.path === '/admin')
 
-// Mapa de equivalencias del estado real
 const estadoMap = {
   pagadas: 'pagado',
   pendientes: 'pendiente',
@@ -62,7 +70,7 @@ const seleccionarFiltro = (tipo) => {
 }
 
 const ordenesFiltradas = computed(() => {
-  const todas = resumen.value.ultimos_pedidos || []
+  const todas = resumen.value.todas || []
   if (filtro.value === 'todas') return todas
 
   const estadoFiltro = estadoMap[filtro.value]
@@ -74,7 +82,7 @@ const filtroTexto = computed(() => {
     case 'pagadas': return 'Pagadas'
     case 'pendientes': return 'Pendientes'
     case 'canceladas': return 'Canceladas'
-    default: return ''
+    default: return 'Totales'
   }
 })
 
