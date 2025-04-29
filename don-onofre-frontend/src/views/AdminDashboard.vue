@@ -1,51 +1,63 @@
 <template>
-  <div>
-    <h2 class="titulo">🔄 Dashboard</h2>
+  <div class="admin">
+    <AdminNav />
 
-    <div class="stats">
-      <div class="card" @click="seleccionarFiltro('todas')">
-        Total Órdenes: {{ resumen.total_ordenes || 0 }}
+    <div v-if="route.path === '/admin'">
+      <h2 class="titulo">🔄 Dashboard</h2>
+
+      <div class="stats">
+        <div class="card" @click="seleccionarFiltro('todas')">
+          Total Órdenes: {{ resumen.total_ordenes || 0 }}
+        </div>
+        <div class="card" @click="seleccionarFiltro('pagadas')">
+          Pagadas: {{ resumen.pagadas || 0 }}
+        </div>
+        <div class="card" @click="seleccionarFiltro('pendientes')">
+          Pendientes: {{ resumen.pendientes || 0 }}
+        </div>
+        <div class="card" @click="seleccionarFiltro('canceladas')">
+          Canceladas: {{ resumen.canceladas || 0 }}
+        </div>
+        <div class="card">
+          Recaudado: Gs. {{ resumen.recaudado ? resumen.recaudado.toLocaleString() : 0 }}
+        </div>
       </div>
-      <div class="card" @click="seleccionarFiltro('pagadas')">
-        Pagadas: {{ resumen.pagadas || 0 }}
+
+      <!-- Lista filtrada -->
+      <div v-if="ordenesFiltradas.length">
+        <h3>📝 Órdenes {{ filtroTexto }}</h3>
+        <ul class="lista">
+          <li v-for="orden in ordenesFiltradas" :key="orden.id">
+            #{{ orden.id }} - {{ orden.estado }} - {{ orden.cliente?.nombre_completo || 'Sin Cliente' }} - Gs. {{ orden.total ? orden.total.toLocaleString() : 0 }}
+          </li>
+        </ul>
       </div>
-      <div class="card" @click="seleccionarFiltro('pendientes')">
-        Pendientes: {{ resumen.pendientes || 0 }}
-      </div>
-      <div class="card" @click="seleccionarFiltro('canceladas')">
-        Canceladas: {{ resumen.canceladas || 0 }}
-      </div>
-      <div class="card">
-        Recaudado: Gs. {{ resumen.recaudado ? resumen.recaudado.toLocaleString() : 0 }}
+
+      <!-- Lista de últimos pedidos si no hay filtro -->
+      <div v-else>
+        <h3>Últimos pedidos:</h3>
+        <ul class="lista">
+          <li v-for="orden in resumen.ultimos_pedidos || []" :key="orden.id">
+            #{{ orden.id }} - {{ orden.estado }} - {{ orden.cliente?.nombre_completo || 'Sin Cliente' }} - Gs. {{ orden.total ? orden.total.toLocaleString() : 0 }}
+          </li>
+        </ul>
       </div>
     </div>
 
-    <div v-if="ordenesFiltradas.length">
-      <h3>📝 Órdenes {{ filtroTexto }}</h3>
-      <ul class="lista">
-        <li v-for="orden in ordenesFiltradas" :key="orden.id">
-          #{{ orden.id }} - {{ orden.estado }} - {{ orden.cliente?.nombre_completo || 'Sin Cliente' }} - Gs. {{ orden.total ? orden.total.toLocaleString() : 0 }}
-        </li>
-      </ul>
-    </div>
-
-    <div v-else>
-      <h3>Últimos pedidos:</h3>
-      <ul class="lista">
-        <li v-for="orden in resumen.ultimos_pedidos || []" :key="orden.id">
-          #{{ orden.id }} - {{ orden.estado }} - {{ orden.cliente?.nombre_completo || 'Sin Cliente' }} - Gs. {{ orden.total ? orden.total.toLocaleString() : 0 }}
-        </li>
-      </ul>
-    </div>
+    <!-- Rutas hijas -->
+    <router-view />
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
 import api from '../api/admin'
+import AdminNav from '../components/AdminNav.vue'
 
 const resumen = ref({})
 const filtro = ref('todas')
+const route = useRoute()
 
 const estadoMap = {
   pagadas: 'pagado',
@@ -58,11 +70,10 @@ const seleccionarFiltro = (tipo) => {
 }
 
 const ordenesFiltradas = computed(() => {
-  const ultimas = resumen.value.ultimos_pedidos || []
-  if (filtro.value === 'todas') return ultimas
-
+  const todas = resumen.value.todas || []
+  if (filtro.value === 'todas') return todas
   const estadoFiltro = estadoMap[filtro.value]
-  return ultimas.filter(orden => orden.estado === estadoFiltro)
+  return todas.filter(orden => orden.estado === estadoFiltro)
 })
 
 const filtroTexto = computed(() => {
@@ -85,6 +96,11 @@ onMounted(async () => {
 </script>
 
 <style scoped>
+.admin {
+  max-width: 1000px;
+  margin: auto;
+  padding: 20px;
+}
 .titulo {
   text-align: center;
   margin-bottom: 20px;
