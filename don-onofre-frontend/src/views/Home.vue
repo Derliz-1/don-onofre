@@ -166,6 +166,174 @@ onMounted(() => {
 </script>
 
 <style scoped>
+<template>
+  <div class="layout">
+    <header class="header">
+      <div class="logo">🛒 Don Onofre</div>
+      <div class="buscador-carrito">
+        <input type="text" v-model="busqueda" placeholder="Buscar productos..." />
+        <button class="btn-carrito" @click="mostrarModal = true">
+          🛍️ Ver Carrito ({{ totalItems }})
+        </button>
+      </div>
+    </header>
+
+    <div class="main">
+      <aside class="sidebar">
+        <h3>Categorías</h3>
+        <ul>
+          <li :class="{ active: categoriaSeleccionada === '' }" @click="categoriaSeleccionada = ''">Todas</li>
+          <li
+            v-for="cat in categorias"
+            :key="cat"
+            :class="{ active: categoriaSeleccionada === cat }"
+            @click="categoriaSeleccionada = cat"
+          >
+            {{ cat }}
+          </li>
+        </ul>
+      </aside>
+
+      <section class="productos">
+        <ProductCard
+          v-for="producto in productosFiltrados"
+          :key="producto.id"
+          :producto="producto"
+          @agregar="agregarAlCarrito"
+        />
+      </section>
+    </div>
+
+    <button v-if="!fin" @click="cargarProductos" class="ver-mas">Ver más productos</button>
+    <button v-if="pagina > 2" @click="reiniciarProductos" class="ver-menos">Ver menos productos</button>
+
+    <FloatingCart
+      v-if="mostrarModal"
+      :carrito="carrito"
+      :total="total"
+      @cerrar="handleCerrarModal"
+      @vaciarCarrito="vaciarCarrito"
+      @eliminar="eliminarDelCarrito"
+    />
+  </div>
+</template>
+
+<script setup>
+import { ref, computed, onMounted } from 'vue'
+import api from '../api.js' // <== Importamos el archivo api.js CORRECTO
+import ProductCard from '../components/ProductCard.vue'
+import FloatingCart from '../components/FloatingCart.vue'
+
+const productos = ref([])
+const pagina = ref(1)
+const perPage = 6
+const cargando = ref(false)
+const fin = ref(false)
+const carrito = ref([])
+const busqueda = ref('')
+const categoriaSeleccionada = ref('')
+const mostrarModal = ref(false)
+
+const categorias = computed(() => {
+  const todas = productos.value.map(p => p.categoria)
+  return [...new Set(todas.filter(Boolean))]
+})
+
+const total = computed(() => carrito.value.reduce((suma, item) => suma + item.precio * item.cantidad, 0))
+const totalItems = computed(() => carrito.value.reduce((n, item) => n + item.cantidad, 0))
+
+const productosFiltrados = computed(() => {
+  return productos.value.filter(p => {
+    const matchCategoria = categoriaSeleccionada.value === '' || p.categoria === categoriaSeleccionada.value
+    const matchBusqueda = p.nombre.toLowerCase().includes(busqueda.value.toLowerCase())
+    return matchCategoria && matchBusqueda
+  })
+})
+
+const agregarAlCarrito = (producto) => {
+  if (producto.stock > 0) {
+    const item = carrito.value.find(p => p.id === producto.id)
+    if (item) {
+      item.cantidad++
+    } else {
+      carrito.value.push({ ...producto, cantidad: 1 })
+    }
+    const prod = productos.value.find(p => p.id === producto.id)
+    if (prod) {
+      prod.stock--
+    }
+    guardarCarrito()
+  }
+}
+
+const eliminarDelCarrito = (productoId) => {
+  const item = carrito.value.find(p => p.id === productoId)
+  if (item) {
+    const prod = productos.value.find(p => p.id === productoId)
+    if (prod) {
+      prod.stock += item.cantidad
+    }
+  }
+  carrito.value = carrito.value.filter(p => p.id !== productoId)
+  guardarCarrito()
+}
+
+const vaciarCarrito = () => {
+  carrito.value = []
+  guardarCarrito()
+}
+
+const handleCerrarModal = () => {
+  mostrarModal.value = false
+}
+
+const reiniciarProductos = async () => {
+  productos.value = []
+  pagina.value = 1
+  fin.value = false
+  await cargarProductos()
+}
+
+const cargarProductos = async () => {
+  if (cargando.value || fin.value) return
+
+  cargando.value = true
+  try {
+    const res = await api.get('/productos', {
+      params: { page: pagina.value, per_page: perPage }
+    })
+
+    if ((res.data.data || []).length === 0) {
+      fin.value = true
+    } else {
+      productos.value.push(...res.data.data)
+      pagina.value++
+    }
+  } catch (error) {
+    console.error('Error cargando productos:', error)
+  }
+
+  cargando.value = false
+}
+
+const guardarCarrito = () => {
+  localStorage.setItem('carrito', JSON.stringify(carrito.value))
+}
+
+const recuperarCarrito = () => {
+  const guardado = localStorage.getItem('carrito')
+  if (guardado) {
+    carrito.value = JSON.parse(guardado)
+  }
+}
+
+onMounted(() => {
+  recuperarCarrito()
+  cargarProductos()
+})
+</script>
+
+<style scoped>
 .layout {
   display: flex;
   flex-direction: column;
@@ -299,4 +467,5 @@ onMounted(() => {
     grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   }
 }
+</style>
 </style>
