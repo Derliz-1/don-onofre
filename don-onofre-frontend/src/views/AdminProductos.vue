@@ -181,14 +181,18 @@ const handleFileUpload = async (event) => {
   const formData = new FormData()
   formData.append('imagen', file)
 
+  // ⚠️ Reemplazá esto con el token real que obtuviste en el login
+  const token = localStorage.getItem('token') // o donde guardás tu token
+
   try {
-    const res = await api.post('/productos/upload-imagen', formData, {
+    const res = await axios.post('https://don-onofre-2r3t.onrender.com/api/productos/upload-imagen', formData, {
       headers: {
-        'Content-Type': 'multipart/form-data'
+        'Content-Type': 'multipart/form-data',
+        'Authorization': `Bearer ${token}`
       }
     })
-    // Corrección de la URL
-    form.value.imagen_url = import.meta.env.VITE_API_URL + res.data.url
+
+    form.value.imagen_url = res.data.url
   } catch (err) {
     errores.value = ['Error al subir la imagen']
     console.error(err)
