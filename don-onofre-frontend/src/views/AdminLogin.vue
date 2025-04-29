@@ -15,7 +15,6 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import axios from 'axios'
 
-// ✅ Creamos instancia de axios usando VITE_API_URL
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
   headers: {
