@@ -13,6 +13,10 @@
         <p><strong>Email:</strong> {{ orden.cliente?.email || 'No disponible' }}</p>
       </div>
 
+    <div class="volver">
+      <RouterLink to="/" class="btn-volver">⬅️ Volver a Inicio</RouterLink>
+    </div>
+
       <h3>🛍️ Productos:</h3>
       <ul class="productos">
         <li v-for="producto in orden.productos || []" :key="producto.id">
@@ -152,5 +156,22 @@ h1, h3 {
 }
 .whatsapp:hover {
   background-color: #1da851;
+}
+
+.volver {
+  text-align: center;
+  margin-top: 30px;
+}
+.btn-volver {
+  display: inline-block;
+  background-color: #6c757d;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: bold;
+}
+.btn-volver:hover {
+  background-color: #5a6268;
 }
 </style>

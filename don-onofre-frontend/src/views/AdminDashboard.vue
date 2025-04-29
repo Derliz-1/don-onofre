@@ -58,11 +58,11 @@ const seleccionarFiltro = (tipo) => {
 }
 
 const ordenesFiltradas = computed(() => {
-  const todas = resumen.value.todas || []
-  if (filtro.value === 'todas') return todas
+  const ultimas = resumen.value.ultimos_pedidos || []
+  if (filtro.value === 'todas') return ultimas
 
   const estadoFiltro = estadoMap[filtro.value]
-  return todas.filter(orden => orden.estado === estadoFiltro)
+  return ultimas.filter(orden => orden.estado === estadoFiltro)
 })
 
 const filtroTexto = computed(() => {
