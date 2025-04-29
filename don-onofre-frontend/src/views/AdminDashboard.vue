@@ -6,45 +6,32 @@
       <h2 class="titulo">🔄 Dashboard</h2>
 
       <div class="stats">
-        <div class="card" @click="seleccionarFiltro('todas')">
-          Total Órdenes: {{ resumen.total_ordenes || 0 }}
-        </div>
-        <div class="card" @click="seleccionarFiltro('pagadas')">
-          Pagadas: {{ resumen.pagadas || 0 }}
-        </div>
-        <div class="card" @click="seleccionarFiltro('pendientes')">
-          Pendientes: {{ resumen.pendientes || 0 }}
-        </div>
-        <div class="card" @click="seleccionarFiltro('canceladas')">
-          Canceladas: {{ resumen.canceladas || 0 }}
-        </div>
-        <div class="card">
-          Recaudado: Gs. {{ resumen.recaudado ? resumen.recaudado.toLocaleString() : 0 }}
-        </div>
+        <div class="card" @click="aplicarFiltro('todas')">Total Órdenes: {{ resumen.total_ordenes || 0 }}</div>
+        <div class="card" @click="aplicarFiltro('pagadas')">Pagadas: {{ resumen.pagadas || 0 }}</div>
+        <div class="card" @click="aplicarFiltro('pendientes')">Pendientes: {{ resumen.pendientes || 0 }}</div>
+        <div class="card" @click="aplicarFiltro('canceladas')">Canceladas: {{ resumen.canceladas || 0 }}</div>
+        <div class="card">Recaudado: Gs. {{ resumen.recaudado?.toLocaleString() || 0 }}</div>
       </div>
 
-      <!-- Lista filtrada -->
-      <div v-if="ordenesFiltradas.length">
-        <h3>📝 Órdenes {{ filtroTexto }}</h3>
+      <div v-if="filtro !== 'todas' && ordenesFiltradas.length">
+        <h3>Órdenes {{ filtroTexto }}</h3>
         <ul class="lista">
           <li v-for="orden in ordenesFiltradas" :key="orden.id">
-            #{{ orden.id }} - {{ orden.estado }} - {{ orden.cliente?.nombre_completo || 'Sin Cliente' }} - Gs. {{ orden.total ? orden.total.toLocaleString() : 0 }}
+            #{{ orden.id }} - {{ orden.estado }} - {{ orden.cliente?.nombre_completo || 'Sin Cliente' }} - Gs. {{ orden.total?.toLocaleString() || 0 }}
           </li>
         </ul>
       </div>
 
-      <!-- Lista de últimos pedidos si no hay filtro -->
       <div v-else>
         <h3>Últimos pedidos:</h3>
         <ul class="lista">
           <li v-for="orden in resumen.ultimos_pedidos || []" :key="orden.id">
-            #{{ orden.id }} - {{ orden.estado }} - {{ orden.cliente?.nombre_completo || 'Sin Cliente' }} - Gs. {{ orden.total ? orden.total.toLocaleString() : 0 }}
+            #{{ orden.id }} - {{ orden.estado }} - {{ orden.cliente?.nombre_completo || 'Sin Cliente' }} - Gs. {{ orden.total?.toLocaleString() || 0 }}
           </li>
         </ul>
       </div>
     </div>
 
-    <!-- Rutas hijas -->
     <router-view />
   </div>
 </template>
@@ -55,34 +42,33 @@ import { useRoute } from 'vue-router'
 import api from '../api/admin'
 import AdminNav from '../components/AdminNav.vue'
 
+const route = useRoute()
 const resumen = ref({})
 const filtro = ref('todas')
-const route = useRoute()
 
-const estadoMap = {
-  pagadas: 'pagado',
-  pendientes: 'pendiente',
-  canceladas: 'cancelado'
-}
-
-const seleccionarFiltro = (tipo) => {
+const aplicarFiltro = (tipo) => {
   filtro.value = tipo
 }
 
 const ordenesFiltradas = computed(() => {
-  const todas = resumen.value.todas || []
-  if (filtro.value === 'todas') return todas
-  const estadoFiltro = estadoMap[filtro.value]
-  return todas.filter(orden => orden.estado === estadoFiltro)
+  if (!resumen.value.todas) return []
+  if (filtro.value === 'todas') return []
+
+  const estado = {
+    pagadas: 'pagado',
+    pendientes: 'pendiente',
+    canceladas: 'cancelado'
+  }[filtro.value]
+
+  return resumen.value.todas.filter(o => o.estado === estado)
 })
 
 const filtroTexto = computed(() => {
-  switch (filtro.value) {
-    case 'pagadas': return 'Pagadas'
-    case 'pendientes': return 'Pendientes'
-    case 'canceladas': return 'Canceladas'
-    default: return 'Totales'
-  }
+  return {
+    pagadas: 'Pagadas',
+    pendientes: 'Pendientes',
+    canceladas: 'Canceladas'
+  }[filtro.value] || ''
 })
 
 onMounted(async () => {
@@ -90,7 +76,7 @@ onMounted(async () => {
     const res = await api.get('/admin/dashboard')
     resumen.value = res.data
   } catch (error) {
-    console.error('Error cargando dashboard:', error)
+    console.error('Error cargando resumen:', error)
   }
 })
 </script>
