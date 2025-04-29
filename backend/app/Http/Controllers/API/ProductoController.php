@@ -108,24 +108,31 @@ class ProductoController extends Controller
     
     public function uploadImagen(Request $request)
     {
-        $request->validate([
-            'imagen' => 'required|image|max:2048',
-        ]);
+        try {
+            $request->validate([
+                'imagen' => 'required|image|max:2048',
+            ]);
     
-        $imagen = $request->file('imagen');
-        $nombreImagen = time() . '_' . $imagen->getClientOriginalName(); // Evita duplicados
+            $imagen = $request->file('imagen');
+            $nombreImagen = time() . '_' . $imagen->getClientOriginalName();
     
-        $rutaDestino = public_path('img/productos');
+            $rutaDestino = public_path('img/productos');
     
-        if (!File::exists($rutaDestino)) {
-            File::makeDirectory($rutaDestino, 0755, true);
+            if (!File::exists($rutaDestino)) {
+                File::makeDirectory($rutaDestino, 0755, true);
+            }
+    
+            $imagen->move($rutaDestino, $nombreImagen);
+    
+            $url = url('img/productos/' . $nombreImagen);
+    
+            return response()->json(['url' => $url]);
+    
+        } catch (\Throwable $e) {
+            return response()->json([
+                'message' => 'Error al subir la imagen.',
+                'error' => $e->getMessage()
+            ], 500);
         }
-    
-        $imagen->move($rutaDestino, $nombreImagen);
-    
-        $url = url('img/productos/' . $nombreImagen);
-    
-        return response()->json(['url' => $url]);
-    }
+    }    
 }
-    
