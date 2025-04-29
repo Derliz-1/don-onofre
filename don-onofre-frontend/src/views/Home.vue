@@ -467,4 +467,3 @@ onMounted(() => {
   }
 }
 </style>
-</style>
