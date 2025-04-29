@@ -109,13 +109,13 @@ class ProductoController extends Controller
         $request->validate([
             'imagen' => 'required|image|max:2048',
         ]);
-
-        // Guarda la imagen en storage/app/public/productos
+    
         $path = $request->file('imagen')->store('public/productos');
-
-        // Genera una URL accesible públicamente
-        $url = url(Storage::url($path));
-
+    
+        $filename = basename($path);
+    
+        $url = env('APP_URL') . '/storage/productos/' . $filename;
+    
         return response()->json(['url' => $url]);
     }
 }
