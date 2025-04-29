@@ -187,8 +187,8 @@ const handleFileUpload = async (event) => {
         'Content-Type': 'multipart/form-data'
       }
     })
-
-    form.value.imagen_url = res.data.url
+    // Corrección de la URL
+    form.value.imagen_url = import.meta.env.VITE_API_URL + res.data.url
   } catch (err) {
     errores.value = ['Error al subir la imagen']
     console.error(err)
