@@ -40,11 +40,11 @@ RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cac
 # Activar módulo rewrite de Apache
 RUN a2enmod rewrite
 
+# Crear carpeta productos para evitar error
+RUN mkdir -p storage/app/public/productos
+
 # Exponer el puerto
 EXPOSE 80
 
-# Comando de inicio
-CMD php artisan migrate --force && \
-    php artisan storage:link && \
-    cp -r storage/app/public/productos public/storage/productos && \
-    apache2-foreground
+# Comando de inicio: migrar, crear link de storage y arrancar Apache
+CMD php artisan migrate --force && php artisan storage:link && apache2-foreground
