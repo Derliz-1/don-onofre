@@ -4,7 +4,7 @@
       {{ producto.stock > 0 ? 'Disponible' : 'AGOTADO' }}
     </div>
 
-    <img :src="producto.imagen_url" alt="Producto" class="product-img" />
+   <img :src="`${import.meta.env.VITE_API_URL}${producto.imagen_url}`" alt="Producto" class="product-img" />
 
     <h3 class="nombre">{{ producto.nombre }}</h3>
     <p class="precio">Gs. {{ producto.precio.toLocaleString() }}</p>
