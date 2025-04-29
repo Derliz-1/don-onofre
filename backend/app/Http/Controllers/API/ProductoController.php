@@ -1,5 +1,7 @@
 <?php
 
+<?php
+
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
@@ -7,6 +9,8 @@ use App\Models\Producto;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\File;
+
 
 class ProductoController extends Controller
 {
@@ -103,9 +107,6 @@ class ProductoController extends Controller
             'producto' => $producto
         ]);
     }
-
-    use Illuminate\Http\Request;
-    use Illuminate\Support\Facades\File;
     
     public function uploadImagen(Request $request)
     {
