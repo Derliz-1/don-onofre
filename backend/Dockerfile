@@ -44,4 +44,4 @@ RUN a2enmod rewrite
 EXPOSE 80
 
 # Comando de inicio
-CMD php artisan migrate --force && apache2-foreground
+CMD php artisan migrate --force && php artisan storage:link && apache2-foreground
