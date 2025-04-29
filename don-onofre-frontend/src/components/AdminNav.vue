@@ -1,9 +1,9 @@
 <template>
   <nav class="admin-nav">
-    <RouterLink to="/admin">🏠 Dashboard</RouterLink>
-    <RouterLink to="/admin/productos">📦 Productos</RouterLink>
-    <RouterLink to="/admin/ordenes">📑 Órdenes</RouterLink>
-    <RouterLink to="/admin/pagos">💳 Pagos</RouterLink>
+    <RouterLink to="/admin" exact-active-class="active">🏠 Dashboard</RouterLink>
+    <RouterLink to="/admin/productos" exact-active-class="active">📦 Productos</RouterLink>
+    <RouterLink to="/admin/ordenes" exact-active-class="active">📑 Órdenes</RouterLink>
+    <RouterLink to="/admin/pagos" exact-active-class="active">💳 Pagos</RouterLink>
     <a href="#" @click.prevent="cerrarSesion">🚪 Cerrar sesión</a>
   </nav>
 </template>
@@ -25,15 +25,13 @@ const cerrarSesion = () => {
   margin-bottom: 20px;
   flex-wrap: wrap;
 }
-button {
-  background: #c0392b;
-  color: white;
-  border: none;
-  padding: 6px 12px;
-  border-radius: 4px;
-  cursor: pointer;
+a, .router-link-active {
+  text-decoration: none;
+  color: #007bff;
 }
-button:hover {
-  background: #e74c3c;
+.active {
+  font-weight: bold;
+  color: #0056b3;
+  text-decoration: underline;
 }
 </style>

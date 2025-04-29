@@ -23,21 +23,12 @@
         </div>
       </div>
 
-      <!-- Listado dinámico -->
-      <div v-if="ordenesFiltradas.length">
-        <h3>📝 Órdenes {{ filtroTexto }}</h3>
+      <div>
+        <h3 v-if="filtro.value !== 'todas'">Órdenes {{ filtroTexto }}</h3>
+        <h3 v-else>Últimos pedidos</h3>
+
         <ul class="lista">
           <li v-for="orden in ordenesFiltradas" :key="orden.id">
-            #{{ orden.id }} - {{ orden.estado }} - {{ orden.cliente?.nombre_completo || 'Sin Cliente' }} - Gs. {{ orden.total ? orden.total.toLocaleString() : 0 }}
-          </li>
-        </ul>
-      </div>
-
-      <!-- Últimos pedidos si no hay filtro -->
-      <div v-else>
-        <h3>Últimos pedidos:</h3>
-        <ul class="lista">
-          <li v-for="orden in resumen.ultimos_pedidos || []" :key="orden.id">
             #{{ orden.id }} - {{ orden.estado }} - {{ orden.cliente?.nombre_completo || 'Sin Cliente' }} - Gs. {{ orden.total ? orden.total.toLocaleString() : 0 }}
           </li>
         </ul>
@@ -66,14 +57,12 @@ const estadoMap = {
   canceladas: 'cancelado'
 }
 
-// Función para seleccionar filtro
 const seleccionarFiltro = (tipo) => {
   filtro.value = tipo
 }
 
-// Función para filtrar las órdenes
 const ordenesFiltradas = computed(() => {
-  const todas = resumen.value.todas || []
+  const todas = resumen.value.ultimos_pedidos || []
   if (filtro.value === 'todas') return todas
 
   const estadoFiltro = estadoMap[filtro.value]
@@ -85,7 +74,7 @@ const filtroTexto = computed(() => {
     case 'pagadas': return 'Pagadas'
     case 'pendientes': return 'Pendientes'
     case 'canceladas': return 'Canceladas'
-    default: return 'Totales'
+    default: return ''
   }
 })
 
