@@ -30,7 +30,7 @@ const router = useRouter()
 const login = async () => {
   try {
     const res = await api.post('/login', { email: email.value, password: password.value })
-    localStorage.setItem('admin_token', res.data.token)
+    localStorage.setItem('token', res.data.token)
     router.push('/admin')
   } catch (err) {
     error.value = 'Credenciales inválidas o no autorizado'
