@@ -172,7 +172,6 @@ onMounted(() => {
   min-height: 100vh;
 }
 
-/* HEADER */
 .header {
   display: flex;
   flex-wrap: wrap;
@@ -188,6 +187,8 @@ onMounted(() => {
 }
 .buscador-carrito {
   display: flex;
+  flex: 1;
+  flex-wrap: wrap;
   gap: 10px;
   align-items: center;
   margin-top: 10px;
@@ -195,7 +196,8 @@ onMounted(() => {
 .buscador-carrito input {
   padding: 8px 12px;
   font-size: 1rem;
-  width: 250px;
+  flex: 1;
+  min-width: 220px;
   border: 1px solid #ccc;
   border-radius: 6px;
 }
@@ -207,27 +209,23 @@ onMounted(() => {
   border-radius: 6px;
   font-weight: bold;
   cursor: pointer;
-  transition: background 0.3s;
 }
 .btn-carrito:hover {
   background-color: #218838;
 }
 
-/* MAIN */
 .main {
   display: flex;
-  flex: 1;
   flex-wrap: wrap;
+  gap: 20px;
   margin: 20px;
 }
 
-/* SIDEBAR */
 .sidebar {
-  width: 200px;
-  padding: 20px;
+  flex: 1 1 200px;
   background: #f1f3f5;
+  padding: 20px;
   border-radius: 10px;
-  margin-bottom: 20px;
 }
 .sidebar h3 {
   margin-bottom: 10px;
@@ -241,7 +239,6 @@ onMounted(() => {
   cursor: pointer;
   padding: 6px 10px;
   border-radius: 6px;
-  transition: background 0.3s;
 }
 .sidebar li:hover {
   background: #e9ecef;
@@ -252,19 +249,16 @@ onMounted(() => {
   background: #dee2e6;
 }
 
-/* PRODUCTOS */
 .productos {
-  flex: 1;
+  flex: 3;
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
   gap: 16px;
   padding: 12px;
 }
 
-/* BOTONES */
 .ver-mas, .ver-menos {
   margin: 20px auto;
-  display: block;
   padding: 10px 20px;
   font-weight: bold;
   background-color: #007bff;
@@ -272,7 +266,6 @@ onMounted(() => {
   border: none;
   border-radius: 6px;
   cursor: pointer;
-  transition: background 0.3s;
 }
 .ver-mas:hover {
   background-color: #0056b3;
@@ -295,12 +288,12 @@ onMounted(() => {
     margin-top: 10px;
     justify-content: flex-start;
   }
+  .main {
+    flex-direction: column;
+  }
   .sidebar {
     width: 100%;
     margin-bottom: 20px;
-  }
-  .main {
-    flex-direction: column;
   }
   .productos {
     grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));

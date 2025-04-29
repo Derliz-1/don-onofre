@@ -78,9 +78,10 @@ const compartirWhatsapp = () => {
 
 onMounted(async () => {
   try {
-    const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/ordenes/${route.params.id}`)
+    const res = await axios.get(`${import.meta.env.VITE_API_URL}/ordenes/${route.params.id}`)
     orden.value = res.data
   } catch (err) {
+    console.error('Error cargando orden:', err)
     error.value = 'No se pudo cargar la orden.'
   } finally {
     cargando.value = false
