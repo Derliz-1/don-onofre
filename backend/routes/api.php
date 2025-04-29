@@ -55,3 +55,22 @@ Route::post('pagos/{orden_id}/generar', [PagoController::class, 'generarLinkPago
 Route::post('pagos/{pago_id}/cancelar', [PagoController::class, 'cancelarPago']);
 Route::post('pagos/webhook', [PagoController::class, 'webhook']);
 Route::post('pagos/{referencia}/confirmar-simulado', [PagoController::class, 'confirmarPagoSimulado']);;
+
+use Illuminate\Support\Facades\DB;
+
+Route::get('/corregir-imagenes', function () {
+    DB::table('productos')
+        ->whereNotNull('imagen_url')
+        ->get()
+        ->each(function ($producto) {
+            if (!str_starts_with($producto->imagen_url, 'http')) {
+                $nuevaUrl = url(Storage::url(str_replace('public/', '', $producto->imagen_url)));
+                
+                DB::table('productos')->where('id', $producto->id)->update([
+                    'imagen_url' => $nuevaUrl
+                ]);
+            }
+        });
+
+    return response()->json(['message' => 'Imágenes corregidas con éxito.']);
+});
