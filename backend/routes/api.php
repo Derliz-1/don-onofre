@@ -32,12 +32,10 @@ Route::post('/login', function (Request $request) {
     ]);
 });
 
-// Verificar API Online
 Route::get('/ping', function () {
     return response()->json(['message' => 'API OK']);
 });
 
-// RUTAS PROTEGIDAS (requieren token válido)
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/admin/dashboard', [AdminController::class, 'resumen']);
     Route::post('/productos', [ProductoController::class, 'store']);
@@ -46,10 +44,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/productos/{producto}', [ProductoController::class, 'destroy']);
 });
 
-// RUTAS PÚBLICAS
 Route::apiResource('productos', ProductoController::class)->only(['index', 'show']);
 Route::apiResource('clientes', ClienteController::class)->only(['store']);
-Route::apiResource('ordenes', OrdenController::class)->only(['store', 'show']);
+Route::apiResource('ordenes', OrdenController::class)->only(['index', 'store', 'show']);
 Route::post('ordenes/{id}/cancelar', [OrdenController::class, 'cancelar']);
 
 Route::get('/pagos', [PagoController::class, 'index']);
@@ -57,18 +54,4 @@ Route::get('pagos/{orden_id}', [PagoController::class, 'show']);
 Route::post('pagos/{orden_id}/generar', [PagoController::class, 'generarLinkPago']);
 Route::post('pagos/{pago_id}/cancelar', [PagoController::class, 'cancelarPago']);
 Route::post('pagos/webhook', [PagoController::class, 'webhook']);
-Route::post('pagos/{referencia}/confirmar-simulado', [PagoController::class, 'confirmarPagoSimulado']);
-
-Route::get('/crear-admin-temp', function () {
-    $user = User::create([
-        'name' => 'Administrador',
-        'email' => 'admin@example.com',
-        'password' => Hash::make('admin123'),
-        'is_admin' => true,  // 👈 asegurate que tu tabla `users` tenga el campo `is_admin`
-    ]);
-
-    return response()->json([
-        'message' => 'Administrador creado',
-        'user' => $user
-    ]);
-});
+Route::post('pagos/{referencia}/confirmar-simulado', [PagoController::class, 'confirmarPagoSimulado']);;
