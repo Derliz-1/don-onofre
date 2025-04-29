@@ -66,27 +66,21 @@ const qrUrl = computed(() => {
   return ''
 })
 
-const imprimirComprobante = () => {
-  window.print()
-}
+const imprimirComprobante = () => window.print()
 
 const compartirWhatsapp = () => {
   if (orden.value?.pago?.referencia_pago) {
     const link = `https://adamspay.com/pagar/${orden.value.pago.referencia_pago}`
     const texto = encodeURIComponent(`Hola, te envío el comprobante de la orden #${orden.value.id}. Link de pago: ${link}`)
     window.open(`https://wa.me/?text=${texto}`, '_blank')
-  } else {
-    alert('No hay link de pago disponible')
   }
 }
 
 onMounted(async () => {
   try {
     const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/ordenes/${route.params.id}`)
-    console.log('Orden cargada:', res.data)
     orden.value = res.data
   } catch (err) {
-    console.error('Error cargando orden:', err)
     error.value = 'No se pudo cargar la orden.'
   } finally {
     cargando.value = false
@@ -110,9 +104,6 @@ onMounted(async () => {
 .info, .pago {
   margin-bottom: 20px;
 }
-.info p, .pago p {
-  margin: 5px 0;
-}
 h1, h3 {
   text-align: center;
   color: #2c3e50;
@@ -134,7 +125,6 @@ h1, h3 {
 .qr img {
   width: 150px;
   height: 150px;
-  margin-bottom: 10px;
 }
 .acciones {
   display: flex;
@@ -142,26 +132,22 @@ h1, h3 {
   gap: 10px;
   margin-top: 20px;
 }
-.imprimir {
-  background-color: #007bff;
-  color: white;
-  border: none;
+.imprimir, .whatsapp {
   padding: 10px;
   font-weight: bold;
+  border: none;
   border-radius: 8px;
   cursor: pointer;
+  color: white;
+}
+.imprimir {
+  background-color: #007bff;
 }
 .imprimir:hover {
   background-color: #0056b3;
 }
 .whatsapp {
   background-color: #25D366;
-  color: white;
-  border: none;
-  padding: 10px;
-  font-weight: bold;
-  border-radius: 8px;
-  cursor: pointer;
 }
 .whatsapp:hover {
   background-color: #1da851;
