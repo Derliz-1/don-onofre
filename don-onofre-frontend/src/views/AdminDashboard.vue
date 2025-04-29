@@ -6,58 +6,39 @@
       <h2 class="titulo">🔄 Dashboard</h2>
 
       <div class="stats">
-        <div
-          class="card card-todas"
-          @click="seleccionarFiltro('todas')"
-        >
-          Total Órdenes
-          <span>{{ resumen.total_ordenes }}</span>
+        <div class="card" @click="seleccionarFiltro('todas')">
+          Total Órdenes: {{ resumen.total_ordenes || 0 }}
         </div>
-
-        <div
-          class="card card-pagadas"
-          @click="seleccionarFiltro('pagadas')"
-        >
-          Pagadas
-          <span>{{ resumen.pagadas }}</span>
+        <div class="card" @click="seleccionarFiltro('pagadas')">
+          Pagadas: {{ resumen.pagadas || 0 }}
         </div>
-
-        <div
-          class="card card-pendientes"
-          @click="seleccionarFiltro('pendientes')"
-        >
-          Pendientes
-          <span>{{ resumen.pendientes }}</span>
+        <div class="card" @click="seleccionarFiltro('pendientes')">
+          Pendientes: {{ resumen.pendientes || 0 }}
         </div>
-
-        <div
-          class="card card-canceladas"
-          @click="seleccionarFiltro('canceladas')"
-        >
-          Canceladas
-          <span>{{ resumen.canceladas }}</span>
+        <div class="card" @click="seleccionarFiltro('canceladas')">
+          Canceladas: {{ resumen.canceladas || 0 }}
         </div>
-
-        <div class="card card-recaudado">
-          Recaudado
-          <span>Gs. {{ resumen.recaudado.toLocaleString() }}</span>
+        <div class="card">
+          Recaudado: Gs. {{ resumen.recaudado ? resumen.recaudado.toLocaleString() : 0 }}
         </div>
       </div>
 
+      <!-- Listado dinámico -->
       <div v-if="ordenesFiltradas.length">
         <h3>📝 Órdenes {{ filtroTexto }}</h3>
-        <ul class="ordenes">
+        <ul class="lista">
           <li v-for="orden in ordenesFiltradas" :key="orden.id">
-            #{{ orden.id }} - {{ orden.estado }} - {{ orden.cliente.nombre }} {{ orden.cliente.apellido }} - Gs. {{ orden.total.toLocaleString() }}
+            #{{ orden.id }} - {{ orden.estado }} - {{ orden.cliente?.nombre_completo || 'Sin Cliente' }} - Gs. {{ orden.total ? orden.total.toLocaleString() : 0 }}
           </li>
         </ul>
       </div>
 
+      <!-- Últimos pedidos si no hay filtro -->
       <div v-else>
         <h3>Últimos pedidos:</h3>
-        <ul class="ordenes">
+        <ul class="lista">
           <li v-for="orden in resumen.ultimos_pedidos || []" :key="orden.id">
-            #{{ orden.id }} - {{ orden.estado }} - {{ orden.cliente.nombre }} {{ orden.cliente.apellido }} - Gs. {{ orden.total.toLocaleString() }}
+            #{{ orden.id }} - {{ orden.estado }} - {{ orden.cliente?.nombre_completo || 'Sin Cliente' }} - Gs. {{ orden.total ? orden.total.toLocaleString() : 0 }}
           </li>
         </ul>
       </div>
@@ -71,7 +52,6 @@
 import { ref, onMounted, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import api from '../api/admin'
-import AdminNav from '../components/AdminNav.vue'
 
 const resumen = ref({})
 const filtro = ref('todas')
@@ -79,27 +59,34 @@ const route = useRoute()
 
 const mostrarDashboard = computed(() => route.path === '/admin')
 
-const seleccionarFiltro = (tipo) => {
-  filtro.value = tipo
-}
-
+// Mapa de equivalencias del estado real
 const estadoMap = {
   pagadas: 'pagado',
   pendientes: 'pendiente',
   canceladas: 'cancelado'
 }
 
+// Función para seleccionar filtro
+const seleccionarFiltro = (tipo) => {
+  filtro.value = tipo
+}
+
+// Función para filtrar las órdenes
 const ordenesFiltradas = computed(() => {
-  if (!filtro.value || filtro.value === 'todas') return resumen.value.todas || []
+  const todas = resumen.value.todas || []
+  if (filtro.value === 'todas') return todas
+
   const estadoFiltro = estadoMap[filtro.value]
-  return (resumen.value.todas || []).filter(orden => orden.estado === estadoFiltro)
+  return todas.filter(orden => orden.estado === estadoFiltro)
 })
 
 const filtroTexto = computed(() => {
-  if (filtro.value === 'pagadas') return 'Pagadas'
-  if (filtro.value === 'pendientes') return 'Pendientes'
-  if (filtro.value === 'canceladas') return 'Canceladas'
-  return 'Totales'
+  switch (filtro.value) {
+    case 'pagadas': return 'Pagadas'
+    case 'pendientes': return 'Pendientes'
+    case 'canceladas': return 'Canceladas'
+    default: return 'Totales'
+  }
 })
 
 onMounted(async () => {
@@ -115,73 +102,45 @@ onMounted(async () => {
 <style scoped>
 .admin {
   max-width: 1000px;
-  margin: 20px auto;
+  margin: auto;
   padding: 20px;
 }
 .titulo {
   text-align: center;
-  font-size: 28px;
   margin-bottom: 20px;
-  color: #333;
+  font-size: 28px;
+  color: #007bff;
 }
 .stats {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-  gap: 15px;
-  margin-bottom: 30px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 20px;
 }
 .card {
-  background: #ffffff;
-  padding: 15px;
+  background: #f8f9fa;
+  padding: 14px;
   border-radius: 10px;
+  flex: 1 1 180px;
   text-align: center;
-  font-weight: bold;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
   cursor: pointer;
-  transition: transform 0.3s, background 0.3s;
-}
-.card span {
-  display: block;
-  font-size: 20px;
-  margin-top: 10px;
-  font-weight: normal;
+  font-weight: bold;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  transition: background 0.3s, transform 0.2s;
 }
 .card:hover {
-  transform: translateY(-5px);
+  background: #e2e6ea;
+  transform: scale(1.03);
 }
-.card-todas {
-  background: linear-gradient(to right, #00c6ff, #0072ff);
-  color: white;
-}
-.card-pagadas {
-  background: linear-gradient(to right, #00b09b, #96c93d);
-  color: white;
-}
-.card-pendientes {
-  background: linear-gradient(to right, #f7971e, #ffd200);
-  color: white;
-}
-.card-canceladas {
-  background: linear-gradient(to right, #f953c6, #b91d73);
-  color: white;
-}
-.card-recaudado {
-  background: linear-gradient(to right, #f12711, #f5af19);
-  color: white;
-}
-.ordenes {
+.lista {
   list-style: none;
   padding: 0;
 }
-.ordenes li {
-  background: #f9f9f9;
+.lista li {
+  background: #fff;
   margin-bottom: 10px;
   padding: 12px;
   border-radius: 8px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.08);
-  transition: background 0.3s;
-}
-.ordenes li:hover {
-  background: #f0f0f0;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.05);
 }
 </style>
