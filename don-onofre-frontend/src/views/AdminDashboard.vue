@@ -2,31 +2,43 @@
   <div class="admin">
     <AdminNav />
 
-    <div v-if="route.path === '/admin'">
-      <h2 class="titulo">🔄 Dashboard</h2>
+    <div v-if="mostrarDashboard">
+      <h2>🔄 Dashboard</h2>
 
       <div class="stats">
-        <div class="card" @click="aplicarFiltro('todas')">Total Órdenes: {{ resumen.total_ordenes || 0 }}</div>
-        <div class="card" @click="aplicarFiltro('pagadas')">Pagadas: {{ resumen.pagadas || 0 }}</div>
-        <div class="card" @click="aplicarFiltro('pendientes')">Pendientes: {{ resumen.pendientes || 0 }}</div>
-        <div class="card" @click="aplicarFiltro('canceladas')">Canceladas: {{ resumen.canceladas || 0 }}</div>
-        <div class="card">Recaudado: Gs. {{ resumen.recaudado?.toLocaleString() || 0 }}</div>
+        <div class="card" @click="seleccionarFiltro('todas')">
+          Total Órdenes: {{ resumen.total_ordenes || 0 }}
+        </div>
+        <div class="card" @click="seleccionarFiltro('pagadas')">
+          Pagadas: {{ resumen.pagadas || 0 }}
+        </div>
+        <div class="card" @click="seleccionarFiltro('pendientes')">
+          Pendientes: {{ resumen.pendientes || 0 }}
+        </div>
+        <div class="card" @click="seleccionarFiltro('canceladas')">
+          Canceladas: {{ resumen.canceladas || 0 }}
+        </div>
+        <div class="card">
+          Recaudado: Gs. {{ resumen.recaudado ? resumen.recaudado.toLocaleString() : 0 }}
+        </div>
       </div>
 
-      <div v-if="filtro !== 'todas' && ordenesFiltradas.length">
-        <h3>Órdenes {{ filtroTexto }}</h3>
-        <ul class="lista">
+      <!-- Listado dinámico -->
+      <div v-if="ordenesFiltradas.length">
+        <h3>📝 Órdenes {{ filtroTexto }}</h3>
+        <ul>
           <li v-for="orden in ordenesFiltradas" :key="orden.id">
-            #{{ orden.id }} - {{ orden.estado }} - {{ orden.cliente?.nombre_completo || 'Sin Cliente' }} - Gs. {{ orden.total?.toLocaleString() || 0 }}
+            #{{ orden.id }} - {{ orden.estado }} - {{ orden.cliente?.nombre_completo || 'Sin Cliente' }} - Gs. {{ orden.total ? orden.total.toLocaleString() : 0 }}
           </li>
         </ul>
       </div>
 
+      <!-- Si no hay órdenes filtradas -->
       <div v-else>
         <h3>Últimos pedidos:</h3>
-        <ul class="lista">
+        <ul>
           <li v-for="orden in resumen.ultimos_pedidos || []" :key="orden.id">
-            #{{ orden.id }} - {{ orden.estado }} - {{ orden.cliente?.nombre_completo || 'Sin Cliente' }} - Gs. {{ orden.total?.toLocaleString() || 0 }}
+            #{{ orden.id }} - {{ orden.estado }} - {{ orden.cliente?.nombre_completo || 'Sin Cliente' }} - Gs. {{ orden.total ? orden.total.toLocaleString() : 0 }}
           </li>
         </ul>
       </div>
@@ -37,38 +49,44 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import api from '../api/admin'
 import AdminNav from '../components/AdminNav.vue'
 
-const route = useRoute()
 const resumen = ref({})
 const filtro = ref('todas')
+const route = useRoute()
 
-const aplicarFiltro = (tipo) => {
+const mostrarDashboard = computed(() => route.path === '/admin')
+
+// Función para seleccionar el filtro
+const seleccionarFiltro = (tipo) => {
   filtro.value = tipo
 }
 
+// Mapa de equivalencias
+const estadoMap = {
+  pagadas: 'pagado',
+  pendientes: 'pendiente',
+  canceladas: 'cancelado'
+}
+
+// Función para filtrar órdenes
 const ordenesFiltradas = computed(() => {
-  if (!resumen.value.todas) return []
-  if (filtro.value === 'todas') return []
+  if (filtro.value === 'todas') return resumen.value.todas || []
 
-  const estado = {
-    pagadas: 'pagado',
-    pendientes: 'pendiente',
-    canceladas: 'cancelado'
-  }[filtro.value]
-
-  return resumen.value.todas.filter(o => o.estado === estado)
+  const estadoFiltro = estadoMap[filtro.value]
+  return (resumen.value.todas || []).filter(orden => orden.estado === estadoFiltro)
 })
 
 const filtroTexto = computed(() => {
-  return {
-    pagadas: 'Pagadas',
-    pendientes: 'Pendientes',
-    canceladas: 'Canceladas'
-  }[filtro.value] || ''
+  switch (filtro.value) {
+    case 'pagadas': return 'Pagadas'
+    case 'pendientes': return 'Pendientes'
+    case 'canceladas': return 'Canceladas'
+    default: return 'Totales'
+  }
 })
 
 onMounted(async () => {
@@ -76,7 +94,7 @@ onMounted(async () => {
     const res = await api.get('/admin/dashboard')
     resumen.value = res.data
   } catch (error) {
-    console.error('Error cargando resumen:', error)
+    console.error('Error cargando dashboard:', error)
   }
 })
 </script>
@@ -87,12 +105,6 @@ onMounted(async () => {
   margin: auto;
   padding: 20px;
 }
-.titulo {
-  text-align: center;
-  margin-bottom: 20px;
-  font-size: 28px;
-  color: #007bff;
-}
 .stats {
   display: flex;
   flex-wrap: wrap;
@@ -100,29 +112,32 @@ onMounted(async () => {
   margin-bottom: 20px;
 }
 .card {
-  background: #f8f9fa;
-  padding: 14px;
-  border-radius: 10px;
-  flex: 1 1 180px;
+  background: #eee;
+  padding: 12px;
+  border-radius: 8px;
+  flex: 1;
   text-align: center;
   cursor: pointer;
   font-weight: bold;
   box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-  transition: background 0.3s, transform 0.2s;
 }
 .card:hover {
-  background: #e2e6ea;
-  transform: scale(1.03);
+  background: #ddd;
 }
-.lista {
+ul {
   list-style: none;
   padding: 0;
 }
-.lista li {
-  background: #fff;
-  margin-bottom: 10px;
-  padding: 12px;
-  border-radius: 8px;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+li {
+  background: #fafafa;
+  margin-bottom: 8px;
+  padding: 10px;
+  border-radius: 6px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+h2 {
+  text-align: center;
+  margin-bottom: 20px;
+  color: #007bff;
 }
 </style>
