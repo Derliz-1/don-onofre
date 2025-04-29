@@ -104,18 +104,29 @@ class ProductoController extends Controller
         ]);
     }
 
+    use Illuminate\Http\Request;
+    use Illuminate\Support\Facades\File;
+    
     public function uploadImagen(Request $request)
     {
         $request->validate([
             'imagen' => 'required|image|max:2048',
         ]);
     
-        $path = $request->file('imagen')->store('public/productos');
+        $imagen = $request->file('imagen');
+        $nombreImagen = time() . '_' . $imagen->getClientOriginalName(); // Evita duplicados
     
-        $filename = basename($path);
+        $rutaDestino = public_path('img/productos');
     
-        $url = env('APP_URL') . '/storage/productos/' . $filename;
+        if (!File::exists($rutaDestino)) {
+            File::makeDirectory($rutaDestino, 0755, true);
+        }
+    
+        $imagen->move($rutaDestino, $nombreImagen);
+    
+        $url = url('img/productos/' . $nombreImagen);
     
         return response()->json(['url' => $url]);
     }
 }
+    
