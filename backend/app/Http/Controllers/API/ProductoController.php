@@ -13,21 +13,20 @@ class ProductoController extends Controller
     public function index(Request $request)
     {
         if ($request->query('admin') === 'true') {
-            
             return response()->json([
                 'productos' => Producto::orderByDesc('created_at')->get()
             ]);
         } else {
-           
             $perPage = $request->get('per_page', 6);
+
             $productos = Producto::where('activo', true)
                 ->where('disponible', true)
                 ->where('agotado', false)
                 ->paginate($perPage);
-    
+
             return response()->json($productos);
         }
-    }         
+    }
 
     public function store(Request $request)
     {
@@ -44,9 +43,7 @@ class ProductoController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'errors' => $validator->errors()
-            ], 422);
+            return response()->json(['errors' => $validator->errors()], 422);
         }
 
         $producto = Producto::create($validator->validated());
@@ -57,14 +54,12 @@ class ProductoController extends Controller
         ], 201);
     }
 
-   
     public function show($id)
     {
         $producto = Producto::findOrFail($id);
         return response()->json($producto);
     }
 
-    
     public function update(Request $request, $id)
     {
         $producto = Producto::findOrFail($id);
@@ -82,9 +77,7 @@ class ProductoController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'errors' => $validator->errors()
-            ], 422);
+            return response()->json(['errors' => $validator->errors()], 422);
         }
 
         $producto->update($validator->validated());
@@ -95,7 +88,6 @@ class ProductoController extends Controller
         ]);
     }
 
-    // Eliminar producto (soft delete: marcar como inactivo y eliminado)
     public function destroy($id)
     {
         $producto = Producto::findOrFail($id);
@@ -112,19 +104,18 @@ class ProductoController extends Controller
         ]);
     }
 
-  public function uploadImagen(Request $request)
-  {
-      $request->validate([
-          'imagen' => 'required|image|max:2048',
-      ]);
-  
-      // Guarda la imagen en storage/app/public/productos
-      $path = $request->file('imagen')->store('public/productos');
-  
-      // Genera la URL completa con dominio
-      $url = asset(Storage::url($path));
-  
-      // Devuelve la URL para usarla en el frontend
-      return response()->json(['url' => $url]);
-  }
-}  
+    public function uploadImagen(Request $request)
+    {
+        $request->validate([
+            'imagen' => 'required|image|max:2048',
+        ]);
+
+        // Guarda la imagen en storage/app/public/productos
+        $path = $request->file('imagen')->store('public/productos');
+
+        // Genera una URL accesible públicamente
+        $url = url(Storage::url($path));
+
+        return response()->json(['url' => $url]);
+    }
+}
