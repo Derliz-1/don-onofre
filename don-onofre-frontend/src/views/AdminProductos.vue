@@ -183,15 +183,13 @@ const handleFileUpload = async (event) => {
 
   try {
     const res = await api.post('/productos/upload-imagen', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data'
-      }
+      headers: { 'Content-Type': 'multipart/form-data' }
     })
-    // Corrección de la URL
-    form.value.imagen_url = import.meta.env.VITE_API_URL + res.data.url
-  } catch (err) {
-    errores.value = ['Error al subir la imagen']
-    console.error(err)
+
+    form.imagen_url = res.data.url
+  } catch (error) {
+    console.error('Error al subir imagen:', error)
+    alert('Error al subir imagen')
   }
 }
 
