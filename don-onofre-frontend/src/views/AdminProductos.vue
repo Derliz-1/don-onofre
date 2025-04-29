@@ -77,6 +77,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import api from '../api/admin'
+import axios from 'axios'
 
 const productos = ref([])
 const errores = ref([])
@@ -181,8 +182,8 @@ const handleFileUpload = async (event) => {
   const formData = new FormData()
   formData.append('imagen', file)
 
-  // ⚠️ Reemplazá esto con el token real que obtuviste en el login
-  const token = localStorage.getItem('token') // o donde guardás tu token
+  // Asegurate de tener el token guardado después del login
+  const token = localStorage.getItem('token')
 
   try {
     const res = await axios.post('https://don-onofre-2r3t.onrender.com/api/productos/upload-imagen', formData, {
@@ -195,7 +196,7 @@ const handleFileUpload = async (event) => {
     form.value.imagen_url = res.data.url
   } catch (err) {
     errores.value = ['Error al subir la imagen']
-    console.error(err)
+    console.error('Error en subida de imagen:', err)
   }
 }
 
