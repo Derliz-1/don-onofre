@@ -9,7 +9,7 @@
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteRule ^ index.php [L]
 
-    # Laravel-specific: prevent .env and sensitive access
+    # Block access to sensitive files
     <Files .env>
         Order allow,deny
         Deny from all
