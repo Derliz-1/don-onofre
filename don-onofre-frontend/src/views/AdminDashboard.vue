@@ -49,7 +49,7 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
 import { useRoute } from 'vue-router'
-import axios from 'axios'
+import api from '../api.js' // ✅ Usamos el axios con token automático
 import AdminNav from '../components/AdminNav.vue'
 
 const resumen = ref({})
@@ -85,13 +85,8 @@ const filtroTexto = computed(() => {
 })
 
 onMounted(async () => {
-  const token = localStorage.getItem('token')
   try {
-    const res = await axios.get('https://don-onofre-2r3t.onrender.com/api/admin/dashboard', {
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
-    })
+    const res = await api.get('/admin/dashboard')
     resumen.value = res.data
   } catch (error) {
     console.error('Error cargando dashboard:', error)
