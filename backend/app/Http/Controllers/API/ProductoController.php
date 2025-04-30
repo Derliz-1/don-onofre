@@ -106,6 +106,8 @@ class ProductoController extends Controller
         ]);
     }
     
+    use Illuminate\Support\Facades\Storage;
+
     public function uploadImagen(Request $request)
     {
         if (!auth()->check()) {
@@ -117,16 +119,15 @@ class ProductoController extends Controller
                 'imagen' => 'required|image|max:2048',
             ]);
     
-            $imagen = $request->file('imagen');
-            $nombre = time() . '_' . $imagen->getClientOriginalName();
-            $imagen->move(public_path('img/productos'), $nombre);
+            $ruta = $request->file('imagen')->store('public/productos');
     
-            $url = url('img/productos/' . $nombre);
+            $url = url(Storage::url($ruta)); // Genera URL pública
+    
             return response()->json(['url' => $url]);
         } catch (\Exception $e) {
             return response()->json(['error' => 'Error al subir imagen', 'mensaje' => $e->getMessage()], 500);
         }
-    }
+    }    
 }    
 
     

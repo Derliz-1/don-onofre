@@ -182,17 +182,17 @@ const handleFileUpload = async (event) => {
   const formData = new FormData()
   formData.append('imagen', file)
 
-  // Asegurate de tener el token guardado después del login
   const token = localStorage.getItem('token')
 
   try {
     const res = await axios.post('https://don-onofre-2r3t.onrender.com/api/productos/upload-imagen', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
-        'Authorization': `Bearer ${token}`
+        Authorization: `Bearer ${token}`
       }
     })
 
+    // La URL pública ya viene generada desde el backend
     form.value.imagen_url = res.data.url
   } catch (err) {
     errores.value = ['Error al subir la imagen']
