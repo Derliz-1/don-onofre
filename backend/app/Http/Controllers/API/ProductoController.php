@@ -105,8 +105,6 @@ class ProductoController extends Controller
             'producto' => $producto
         ]);
     }
-    
-    use Illuminate\Support\Facades\Storage;
 
     public function uploadImagen(Request $request)
     {
