@@ -105,7 +105,6 @@ class ProductoController extends Controller
             'producto' => $producto
         ]);
     }
-
     public function uploadImagen(Request $request)
     {
         if (!auth()->check()) {
@@ -119,13 +118,12 @@ class ProductoController extends Controller
     
             $ruta = $request->file('imagen')->store('public/productos');
     
-            $url = url(Storage::url($ruta)); // Genera URL pública
+            $url = secure_url(Storage::url($ruta)); // ✅ URL con HTTPS siempre
     
             return response()->json(['url' => $url]);
         } catch (\Exception $e) {
             return response()->json(['error' => 'Error al subir imagen', 'mensaje' => $e->getMessage()], 500);
         }
-    }    
+    }
 }    
-
     
