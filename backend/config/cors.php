@@ -8,7 +8,6 @@ return [
 
     'allowed_origins' => [
         'https://don-onofre-zeta.vercel.app',
-        'http://localhost:3000' // si querés también para desarrollo
     ],
 
     'allowed_origins_patterns' => [],
