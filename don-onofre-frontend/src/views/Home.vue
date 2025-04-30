@@ -53,9 +53,9 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import api from '../api.js'
+import api from '../api.js' 
 import ProductCard from '../components/ProductCard.vue'
-import FloatingCart from '../components/FloatingCart.vue' // ✅ mantiene el flujo correcto
+import FloatingCart from '../components/FloatingCart.vue'
 
 const productos = ref([])
 const pagina = ref(1)
