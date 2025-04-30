@@ -23,7 +23,6 @@
         </div>
       </div>
 
-      <!-- Listado dinámico -->
       <div v-if="ordenesFiltradas.length">
         <h3>📝 Órdenes {{ filtroTexto }}</h3>
         <ul>
@@ -33,7 +32,6 @@
         </ul>
       </div>
 
-      <!-- Si no hay órdenes filtradas -->
       <div v-else>
         <h3>Últimos pedidos:</h3>
         <ul>
@@ -51,7 +49,7 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
 import { useRoute } from 'vue-router'
-import api from '../api/admin'
+import axios from 'axios'
 import AdminNav from '../components/AdminNav.vue'
 
 const resumen = ref({})
@@ -60,19 +58,16 @@ const route = useRoute()
 
 const mostrarDashboard = computed(() => route.path === '/admin')
 
-// Función para seleccionar el filtro
 const seleccionarFiltro = (tipo) => {
   filtro.value = tipo
 }
 
-// Mapa de equivalencias
 const estadoMap = {
   pagadas: 'pagado',
   pendientes: 'pendiente',
   canceladas: 'cancelado'
 }
 
-// Función para filtrar órdenes
 const ordenesFiltradas = computed(() => {
   if (filtro.value === 'todas') return resumen.value.todas || []
 
@@ -90,8 +85,13 @@ const filtroTexto = computed(() => {
 })
 
 onMounted(async () => {
+  const token = localStorage.getItem('token')
   try {
-    const res = await api.get('/admin/dashboard')
+    const res = await axios.get('https://don-onofre-2r3t.onrender.com/api/admin/dashboard', {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    })
     resumen.value = res.data
   } catch (error) {
     console.error('Error cargando dashboard:', error)
