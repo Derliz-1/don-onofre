@@ -11,42 +11,58 @@ use Illuminate\Support\Str;
 
 class PagoController extends Controller
 {
-    // 1. GENERAR LINK DE PAGO REAL CON ADAMSPAY
     public function generarLinkPago($orden_id)
     {
-        $orden = Orden::with('cliente', 'productos')->findOrFail($orden_id);
-
-        $response = Http::post('https://api.adamspay.com/sandbox/api/deudas', [
-            'monto' => $orden->total,
-            'descripcion' => 'Compra de productos Don Onofre',
-            'id_cliente' => $orden->cliente->id,
-            'nombre_cliente' => $orden->cliente->nombre,
-            'email_cliente' => $orden->cliente->email,
-            'webhook' => route('pago.webhook'),
-            'retornar_url' => 'https://don-onofre-three.vercel.app/confirmacion/' . $orden->id,
-            'apikey' => env('ADAMSPAY_API_KEY'),
-        ]);
-
-        if ($response->failed()) {
-            return response()->json(['error' => 'Error al generar el link de pago.'], 500);
+        try {
+            $orden = Orden::with('cliente')->findOrFail($orden_id);
+    
+            if ($orden->total <= 0) {
+                return response()->json([
+                    'error' => 'El total de la orden debe ser mayor a 0'
+                ], 400);
+            }
+    
+            $referencia = strtoupper(Str::random(10));
+    
+            $payload = [
+                'amount' => $orden->total,
+                'currency' => 'PYG',
+                'description' => 'Pago de orden #' . $orden->id,
+                'reference' => $referencia,
+                'return_url' => 'https://don-onofre-zeta.vercel.app/orden/' . $orden->id
+            ];
+    
+            $response = Http::withHeaders([
+                'X-AdamsPay-API-Key' => env('ADAMSPAY_API_KEY')
+            ])->post('https://sandbox.adamspay.com/api/v1/charge', $payload);
+    
+            if ($response->failed()) {
+                return response()->json([
+                    'error' => 'Error desde AdamsPay',
+                    'detalle' => $response->json()
+                ], 500);
+            }
+    
+            $pago = Pago::create([
+                'orden_id' => $orden->id,
+                'referencia_pago' => $referencia,
+                'estado' => 'pendiente',
+                'respuesta_adamspay' => $response->body()
+            ]);
+    
+            return response()->json([
+                'message' => 'Link de pago generado correctamente.',
+                'pago' => $pago,
+                'link_pago' => $response->json()['payment_url']
+            ], 201);
+    
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Fallo al generar link de pago',
+                'mensaje' => $e->getMessage()
+            ], 500);
         }
-
-        $data = $response->json();
-
-        $pago = Pago::create([
-            'orden_id' => $orden->id,
-            'referencia_pago' => $data['referencia_pago'],
-            'estado' => 'pendiente',
-            'respuesta_adamspay' => json_encode($data),
-        ]);
-
-        return response()->json([
-            'message' => 'Link de pago generado correctamente.',
-            'pago' => $pago,
-            'link_pago' => $data['payment_url']
-        ]);
-    }
-
+    }    
     // 2. WEBHOOK OFICIAL DE ADAMSPAY
     public function webhook(Request $request)
     {
