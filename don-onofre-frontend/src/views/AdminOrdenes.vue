@@ -12,7 +12,12 @@
 
     <ul>
       <li v-for="orden in ordenesFiltradas" :key="orden.id" class="orden-item">
-        <h3>🧾 Orden #{{ orden.id }} - <span class="estado">{{ orden.estado }}</span> - Gs. {{ orden.total }}</h3>
+        <h3>
+          🧾 Orden #{{ orden.id }} -
+          <span class="estado" :class="orden.estado">{{ estadoTexto(orden.estado) }}</span> -
+          Gs. {{ orden.total?.toLocaleString() }}
+        </h3>
+
         <p><strong>Cliente:</strong> {{ orden.cliente.nombre_completo }} | {{ orden.cliente.email }} | {{ orden.cliente.telefono }}</p>
         <p><strong>Dirección:</strong> {{ orden.cliente.direccion }}, {{ orden.cliente.ciudad }}, {{ orden.cliente.pais }}</p>
         <p><strong>Fecha:</strong> {{ orden.created_at.slice(0, 10) }}</p>
@@ -22,7 +27,7 @@
           <p><strong>Productos:</strong></p>
           <ul>
             <li v-for="producto in orden.productos" :key="producto.id">
-              {{ producto.nombre }} × {{ producto.pivot.cantidad }} - Subtotal: Gs. {{ producto.pivot.subtotal }}
+              {{ producto.nombre }} × {{ producto.pivot.cantidad }} - Subtotal: Gs. {{ producto.pivot.subtotal?.toLocaleString() }}
             </li>
           </ul>
         </div>
@@ -44,10 +49,20 @@ const ordenesFiltradas = computed(() => {
 })
 
 const filtrarOrdenes = () => {
+  // Ya se filtra con computed automáticamente
 }
 
 const limpiarFiltro = () => {
   filtroFecha.value = ''
+}
+
+const estadoTexto = (estado) => {
+  switch (estado) {
+    case 'pendiente': return '🕑 Pendiente'
+    case 'pagado': return '✅ Pagado'
+    case 'cancelado': return '❌ Cancelado'
+    default: return estado
+  }
 }
 
 onMounted(async () => {
@@ -58,8 +73,6 @@ onMounted(async () => {
 
 <style scoped>
 .admin {
-  max-width: 900px;
-  margin: auto;
   padding: 20px;
 }
 .filtros {
@@ -68,40 +81,23 @@ onMounted(async () => {
   gap: 10px;
   align-items: center;
 }
-.filtros input[type="date"] {
-  padding: 6px;
-  border-radius: 4px;
-  border: 1px solid #ccc;
-}
-.filtros button {
-  padding: 6px 12px;
-  font-weight: bold;
-  background-color: #007bff;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-}
-.filtros button:hover {
-  background-color: #0056b3;
-}
 .orden-item {
-  border: 1px solid #ddd;
+  border: 1px solid #ccc;
   border-radius: 8px;
   padding: 15px;
-  margin-bottom: 20px;
-  background: #fefefe;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-}
-.orden-item h3 {
-  margin-bottom: 10px;
+  margin-bottom: 15px;
+  background: #f9f9f9;
 }
 .estado {
-  text-transform: capitalize;
-  color: #17a2b8;
+  font-weight: bold;
 }
-.productos ul {
-  padding-left: 20px;
-  margin: 0;
+.estado.pendiente {
+  color: orange;
+}
+.estado.pagado {
+  color: green;
+}
+.estado.cancelado {
+  color: red;
 }
 </style>

@@ -13,9 +13,9 @@
         <p><strong>Email:</strong> {{ orden.cliente?.email || 'No disponible' }}</p>
       </div>
 
-    <div class="volver">
-      <RouterLink to="/" class="btn-volver">⬅️ Volver a Inicio</RouterLink>
-    </div>
+      <div class="volver">
+        <RouterLink to="/" class="btn-volver">⬅️ Volver a Inicio</RouterLink>
+      </div>
 
       <h3>🛍️ Productos:</h3>
       <ul class="productos">
@@ -29,9 +29,11 @@
         <p><strong>Referencia:</strong> {{ orden.pago.referencia_pago }}</p>
         <p><strong>Confirmado:</strong> {{ orden.pago.confirmado_en || 'Pendiente' }}</p>
 
-        <div class="qr">
+        <div class="qr" v-if="linkPagoReal">
           <img :src="qrUrl" alt="QR de pago" />
-          <p><a :href="`https://adamspay.com/pagar/${orden.pago.referencia_pago}`" target="_blank">🔗 Ver link de pago</a></p>
+          <p>
+            <a :href="linkPagoReal" target="_blank">🔗 Ver link de pago</a>
+          </p>
         </div>
       </div>
 
@@ -63,19 +65,28 @@ const estadoTexto = computed(() => {
   }
 })
 
-const qrUrl = computed(() => {
-  if (orden.value?.pago?.referencia_pago) {
-    return `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://adamspay.com/pagar/${orden.value.pago.referencia_pago}`
+// Obtener el link de pago real desde la respuesta JSON de AdamsPay
+const linkPagoReal = computed(() => {
+  try {
+    const data = JSON.parse(orden.value?.pago?.respuesta_adamspay || '{}')
+    return data.payment_url || ''
+  } catch (e) {
+    return ''
   }
-  return ''
+})
+
+// QR dinámico basado en el link real
+const qrUrl = computed(() => {
+  return linkPagoReal.value
+    ? `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(linkPagoReal.value)}`
+    : ''
 })
 
 const imprimirComprobante = () => window.print()
 
 const compartirWhatsapp = () => {
-  if (orden.value?.pago?.referencia_pago) {
-    const link = `https://adamspay.com/pagar/${orden.value.pago.referencia_pago}`
-    const texto = encodeURIComponent(`Hola, te envío el comprobante de la orden #${orden.value.id}. Link de pago: ${link}`)
+  if (linkPagoReal.value) {
+    const texto = encodeURIComponent(`Hola, te envío el comprobante de la orden #${orden.value.id}. Link de pago: ${linkPagoReal.value}`)
     window.open(`https://wa.me/?text=${texto}`, '_blank')
   }
 }
@@ -157,7 +168,6 @@ h1, h3 {
 .whatsapp:hover {
   background-color: #1da851;
 }
-
 .volver {
   text-align: center;
   margin-top: 30px;

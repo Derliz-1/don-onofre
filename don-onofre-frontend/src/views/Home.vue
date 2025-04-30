@@ -39,6 +39,7 @@
     <button v-if="!fin" @click="cargarProductos" class="ver-mas">Ver más productos</button>
     <button v-if="pagina > 2" @click="reiniciarProductos" class="ver-menos">Ver menos productos</button>
 
+    <!-- MODAL de carrito y checkout -->
     <FloatingCart
       v-if="mostrarModal"
       :carrito="carrito"
@@ -54,7 +55,7 @@
 import { ref, computed, onMounted } from 'vue'
 import api from '../api.js'
 import ProductCard from '../components/ProductCard.vue'
-import FloatingCart from '../components/FloatingCart.vue'
+import FloatingCart from '../components/FloatingCart.vue' // ✅ mantiene el flujo correcto
 
 const productos = ref([])
 const pagina = ref(1)

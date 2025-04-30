@@ -1,4 +1,3 @@
-
 <template>
   <div class="modal-overlay">
     <div class="modal-content">
@@ -13,20 +12,15 @@
 
       <p><strong>Total:</strong> Gs. {{ total }}</p>
 
-      <CheckoutForm
-        :carrito="carrito"
-        @cerrar="$emit('cerrar')"
-        @vaciarCarrito="$emit('vaciarCarrito')"
-      />
+      <CheckoutForm :carrito="carrito" />
     </div>
   </div>
 </template>
 
 <script setup>
 import CheckoutForm from './CheckoutForm.vue'
-
-const props = defineProps(['carrito', 'total'])
-const emits = defineEmits(['cerrar', 'vaciarCarrito', 'eliminar'])
+defineProps(['carrito', 'total'])
+defineEmits(['cerrar', 'eliminar']) // ya no necesitás vaciarCarrito aquí
 </script>
 
 <style scoped>

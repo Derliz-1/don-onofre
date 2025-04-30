@@ -11,10 +11,13 @@ use Illuminate\Support\Facades\DB;
 
 class OrdenController extends Controller
 {
-        public function index()
+    // LISTAR ÓRDENES (Admin)
+    public function index()
     {
         return Orden::with(['cliente', 'productos', 'pago'])->latest()->get();
     }
+
+    // CREAR UNA ORDEN NUEVA
     public function store(Request $request)
     {
         $request->validate([
@@ -32,11 +35,14 @@ class OrdenController extends Controller
 
         try {
             DB::beginTransaction();
+
+            // Buscar o crear cliente
             $cliente = Cliente::firstOrCreate(
                 ['email' => $request->cliente['email']],
                 $request->cliente
             );
 
+            // Crear la orden
             $orden = Orden::create([
                 'cliente_id' => $cliente->id,
                 'estado' => 'pendiente',
@@ -68,6 +74,7 @@ class OrdenController extends Controller
 
             return response()->json([
                 'message' => 'Orden creada con éxito.',
+                'orden_id' => $orden->id,
                 'orden' => $orden->load('productos', 'cliente'),
             ], 201);
 
@@ -80,12 +87,14 @@ class OrdenController extends Controller
         }
     }
 
+    // DETALLE DE UNA ORDEN
     public function show($id)
     {
         $orden = Orden::with(['cliente', 'productos', 'pago'])->findOrFail($id);
         return response()->json($orden);
     }
 
+    // CANCELAR UNA ORDEN MANUALMENTE
     public function cancelar($id, Request $request)
     {
         $orden = Orden::findOrFail($id);

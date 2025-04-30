@@ -23,12 +23,32 @@
 
     <ul>
       <li v-for="pago in pagos" :key="pago.id" class="pago-item">
-        <h3>Pago #{{ pago.id }} - <span class="estado">{{ pago.estado }}</span></h3>
+        <h3>
+          Pago #{{ pago.id }} -
+          <span class="estado" :class="pago.estado">
+            {{ estadoTexto(pago.estado) }}
+          </span>
+        </h3>
         <p><strong>Referencia:</strong> {{ pago.referencia_pago }}</p>
-        <p><strong>Orden:</strong> #{{ pago.orden_id }} | Total: Gs. {{ pago.orden?.total }}</p>
-        <p><strong>Cliente:</strong> {{ pago.orden?.cliente?.nombre_completo }} | {{ pago.orden?.cliente?.email }} | {{ pago.orden?.cliente?.telefono }}</p>
-        <p><strong>Dirección:</strong> {{ pago.orden?.cliente?.direccion }}, {{ pago.orden?.cliente?.ciudad }}, {{ pago.orden?.cliente?.pais }}</p>
-        <p><strong>Fecha:</strong> {{ pago.confirmado_en ? pago.confirmado_en.slice(0, 10) : '❌ No confirmado' }}</p>
+        <p><strong>Orden:</strong> #{{ pago.orden_id }} | Total: Gs. {{ pago.orden?.total?.toLocaleString() }}</p>
+        <p>
+          <strong>Cliente:</strong>
+          {{ pago.orden?.cliente?.nombre_completo }} |
+          {{ pago.orden?.cliente?.email }} |
+          {{ pago.orden?.cliente?.telefono }}
+        </p>
+        <p>
+          <strong>Dirección:</strong>
+          {{ pago.orden?.cliente?.direccion }},
+          {{ pago.orden?.cliente?.ciudad }},
+          {{ pago.orden?.cliente?.pais }}
+        </p>
+        <p>
+          <strong>Fecha:</strong>
+          {{ pago.confirmado_en
+            ? new Date(pago.confirmado_en).toLocaleDateString('es-PY')
+            : '❌ No confirmado' }}
+        </p>
       </li>
     </ul>
   </div>
@@ -41,6 +61,17 @@ import api from '../api/admin'
 const pagos = ref([])
 const filtroEstado = ref('')
 const filtroFecha = ref('')
+
+const estadoTexto = (estado) => {
+  switch (estado) {
+    case 'pendiente': return '🕑 Pendiente'
+    case 'exitoso': return '✅ Exitoso'
+    case 'cancelado': return '❌ Cancelado'
+    case 'expirado': return '⌛ Expirado'
+    case 'fallido': return '⚠️ Fallido'
+    default: return estado
+  }
+}
 
 const filtrarPagos = async () => {
   const params = {}
@@ -66,48 +97,44 @@ onMounted(async () => {
 
 <style scoped>
 .admin {
-  max-width: 900px;
-  margin: auto;
   padding: 20px;
 }
+
 .filtros {
   margin-bottom: 20px;
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
+  gap: 10px;
   align-items: center;
 }
-.filtros select,
-.filtros input[type="date"] {
-  padding: 6px;
-  border-radius: 4px;
-  border: 1px solid #ccc;
-}
-.filtros button {
-  padding: 6px 12px;
+
+.filtros label {
   font-weight: bold;
-  background-color: #007bff;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
 }
-.filtros button:hover {
-  background-color: #0056b3;
-}
+
 .pago-item {
-  border: 1px solid #ddd;
+  border: 1px solid #ccc;
   border-radius: 8px;
   padding: 15px;
-  margin-bottom: 20px;
-  background: #fefefe;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+  margin-bottom: 15px;
+  background: #f8f9fa;
 }
-.pago-item h3 {
-  margin-bottom: 10px;
-}
+
 .estado {
-  text-transform: capitalize;
-  color: #17a2b8;
+  font-weight: bold;
+}
+
+.estado.pendiente {
+  color: orange;
+}
+
+.estado.exitoso {
+  color: green;
+}
+
+.estado.cancelado,
+.estado.expirado,
+.estado.fallido {
+  color: red;
 }
 </style>

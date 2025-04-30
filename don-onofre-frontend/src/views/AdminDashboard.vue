@@ -19,7 +19,7 @@
           Canceladas: {{ resumen.canceladas || 0 }}
         </div>
         <div class="card">
-          Recaudado: Gs. {{ resumen.recaudado ? resumen.recaudado.toLocaleString() : 0 }}
+          Recaudado: Gs. {{ resumen.recaudado ? resumen.recaudado.toLocaleString() : '0' }}
         </div>
       </div>
 
@@ -27,7 +27,10 @@
         <h3>📝 Órdenes {{ filtroTexto }}</h3>
         <ul>
           <li v-for="orden in ordenesFiltradas" :key="orden.id">
-            #{{ orden.id }} - {{ orden.estado }} - {{ orden.cliente?.nombre_completo || 'Sin Cliente' }} - Gs. {{ orden.total ? orden.total.toLocaleString() : 0 }}
+            #{{ orden.id }} -
+            <span :class="orden.estado">{{ estadoTexto(orden.estado) }}</span> -
+            {{ orden.cliente?.nombre_completo || 'Sin Cliente' }} -
+            Gs. {{ orden.total ? orden.total.toLocaleString() : 0 }}
           </li>
         </ul>
       </div>
@@ -36,7 +39,10 @@
         <h3>Últimos pedidos:</h3>
         <ul>
           <li v-for="orden in resumen.ultimos_pedidos || []" :key="orden.id">
-            #{{ orden.id }} - {{ orden.estado }} - {{ orden.cliente?.nombre_completo || 'Sin Cliente' }} - Gs. {{ orden.total ? orden.total.toLocaleString() : 0 }}
+            #{{ orden.id }} -
+            <span :class="orden.estado">{{ estadoTexto(orden.estado) }}</span> -
+            {{ orden.cliente?.nombre_completo || 'Sin Cliente' }} -
+            Gs. {{ orden.total ? orden.total.toLocaleString() : 0 }}
           </li>
         </ul>
       </div>
@@ -52,7 +58,10 @@ import { useRoute } from 'vue-router'
 import axios from 'axios'
 import AdminNav from '../components/AdminNav.vue'
 
-const resumen = ref({})
+const resumen = ref({
+  todas: [],
+  ultimos_pedidos: []
+})
 const filtro = ref('todas')
 const route = useRoute()
 
@@ -66,6 +75,15 @@ const estadoMap = {
   pagadas: 'pagado',
   pendientes: 'pendiente',
   canceladas: 'cancelado'
+}
+
+const estadoTexto = (estado) => {
+  switch (estado) {
+    case 'pendiente': return '🕑 Pendiente'
+    case 'pagado': return '✅ Pagado'
+    case 'cancelado': return '❌ Cancelado'
+    default: return estado
+  }
 }
 
 const ordenesFiltradas = computed(() => {
@@ -92,7 +110,10 @@ onMounted(async () => {
         Authorization: `Bearer ${token}`
       }
     })
-    resumen.value = res.data
+    resumen.value = {
+      ...res.data,
+      todas: res.data.ultimos_pedidos || []
+    }
   } catch (error) {
     console.error('Error cargando dashboard:', error)
   }
@@ -134,6 +155,18 @@ li {
   padding: 10px;
   border-radius: 6px;
   box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+.pagado {
+  color: green;
+  font-weight: bold;
+}
+.pendiente {
+  color: orange;
+  font-weight: bold;
+}
+.cancelado {
+  color: red;
+  font-weight: bold;
 }
 h2 {
   text-align: center;

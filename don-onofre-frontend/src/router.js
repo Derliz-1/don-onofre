@@ -1,21 +1,27 @@
 import { createRouter, createWebHistory } from 'vue-router'
+
 import Home from './views/Home.vue'
+import VerOrden from './views/VerOrden.vue'
+import Confirmacion from './views/Confirmacion.vue'
+
 import AdminLogin from './views/AdminLogin.vue'
 import AdminDashboard from './views/AdminDashboard.vue'
 import AdminProductos from './views/AdminProductos.vue'
 import AdminOrdenes from './views/AdminOrdenes.vue'
 import AdminPagos from './views/AdminPagos.vue'
-import VerOrden from './views/VerOrden.vue'
 
 const routes = [
-  { path: '/', component: Home },
-  { path: '/orden/:id', component: VerOrden },
+  // 🛍️ Cliente
+  { path: '/', name: 'Home', component: Home },
+  { path: '/orden/:id', name: 'VerOrden', component: VerOrden },
+  { path: '/confirmacion/:id', name: 'Confirmacion', component: Confirmacion },
 
-  { path: '/admin/login', component: AdminLogin },
-  { path: '/admin', component: AdminDashboard },
-  { path: '/admin/productos', component: AdminProductos },
-  { path: '/admin/ordenes', component: AdminOrdenes },
-  { path: '/admin/pagos', component: AdminPagos },
+  // 🔐 Admin
+  { path: '/admin/login', name: 'AdminLogin', component: AdminLogin },
+  { path: '/admin', name: 'AdminDashboard', component: AdminDashboard },
+  { path: '/admin/productos', name: 'AdminProductos', component: AdminProductos },
+  { path: '/admin/ordenes', name: 'AdminOrdenes', component: AdminOrdenes },
+  { path: '/admin/pagos', name: 'AdminPagos', component: AdminPagos }
 ]
 
 const router = createRouter({

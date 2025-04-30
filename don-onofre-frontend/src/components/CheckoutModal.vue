@@ -13,11 +13,7 @@
         <p><strong>Total:</strong> Gs. {{ total }}</p>
       </div>
 
-      <CheckoutForm
-        :carrito="carrito"
-        @cerrar="cerrar"
-        @cancelar="$emit('cancelar')"
-      />
+      <CheckoutForm :carrito="carrito" />
     </div>
   </div>
 </template>
@@ -25,7 +21,7 @@
 <script setup>
 import CheckoutForm from './CheckoutForm.vue'
 defineProps(['carrito', 'total'])
-const emit = defineEmits(['cerrar', 'eliminar', 'cancelar'])
+const emit = defineEmits(['cerrar', 'eliminar'])
 
 const cerrar = () => emit('cerrar')
 </script>

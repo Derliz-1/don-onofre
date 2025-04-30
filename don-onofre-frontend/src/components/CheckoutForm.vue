@@ -2,38 +2,28 @@
   <div>
     <h2>📋 Datos del Cliente</h2>
 
-   <form @submit.prevent="realizarPedido">
-  <input v-model="cliente.nombre_completo" placeholder="Nombre completo" required />
-  <input v-model="cliente.email" placeholder="Email" required type="email" />
-  <input v-model="cliente.telefono" placeholder="Teléfono" />
-  <input v-model="cliente.direccion" placeholder="Dirección" />
-  <input v-model="cliente.ciudad" placeholder="Ciudad" />
-  <input v-model="cliente.pais" placeholder="País" />
-  <textarea v-model="notas" placeholder="Notas del pedido..."></textarea>
+    <form @submit.prevent="realizarPedido">
+      <input v-model="cliente.nombre_completo" placeholder="Nombre completo" required />
+      <input v-model="cliente.email" placeholder="Email" required type="email" />
+      <input v-model="cliente.telefono" placeholder="Teléfono" />
+      <input v-model="cliente.direccion" placeholder="Dirección" />
+      <input v-model="cliente.ciudad" placeholder="Ciudad" />
+      <input v-model="cliente.pais" placeholder="País" />
+      <textarea v-model="notas" placeholder="Notas del pedido..."></textarea>
 
-  <button type="submit" :disabled="loading">
-    {{ loading ? 'Procesando...' : 'Generar Orden y Pagar' }}
-  </button>
-</form>
-
-    <OrderResumenModal
-      v-if="ordenGenerada"
-      :orden="ordenGenerada"
-      @close="handleCloseModal"
-/>
+      <button type="submit" :disabled="loading">
+        {{ loading ? 'Procesando...' : 'Generar Orden y Pagar' }}
+      </button>
+    </form>
   </div>
 </template>
 
 <script setup>
 import { ref } from 'vue'
-import OrderResumenModal from './OrderResumenModal.vue'
 import api from '../api'
-import { useRouter } from 'vue-router'
 
 const props = defineProps(['carrito'])
-const emits = defineEmits(['cerrar', 'vaciarCarrito'])
 
-const router = useRouter()
 const cliente = ref({
   nombre_completo: '',
   email: '',
@@ -43,31 +33,30 @@ const cliente = ref({
   pais: ''
 })
 const notas = ref('')
-const ordenGenerada = ref(null)
 const loading = ref(false)
 
 const realizarPedido = async () => {
   if (props.carrito.length === 0) return
 
   loading.value = true
-  const res = await api.post('/ordenes', {
-    cliente: cliente.value,
-    productos: props.carrito.map(p => ({ id: p.id, cantidad: p.cantidad })),
-    notas: notas.value
-  })
 
-  const pago = await api.post(`/pagos/${res.data.orden.id}/generar`)
-  ordenGenerada.value = { ...res.data.orden, pago: pago.data.pago }
+  try {
+    const res = await api.post('/ordenes', {
+      cliente: cliente.value,
+      productos: props.carrito.map(p => ({ id: p.id, cantidad: p.cantidad })),
+      notas: notas.value
+    })
 
-  loading.value = false
-}
+    const pago = await api.post(`/pagos/${res.data.orden.id}/generar`)
 
-const handleCloseModal = (estado) => {
-  ordenGenerada.value = null
-  if (estado === 'cancelada') {
-    emits('vaciarCarrito')
-    emits('cerrar')
-    router.push('/')
+    // ✅ Redirige al link real de AdamsPay
+    window.location.href = pago.data.link_pago
+
+  } catch (error) {
+    alert('Error al generar la orden o el link de pago')
+    console.error(error)
+  } finally {
+    loading.value = false
   }
 }
 </script>
