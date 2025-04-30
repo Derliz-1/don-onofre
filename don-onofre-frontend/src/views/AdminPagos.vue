@@ -56,7 +56,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import api from '../api/admin'
+import api from '../api'
 
 const pagos = ref([])
 const filtroEstado = ref('')

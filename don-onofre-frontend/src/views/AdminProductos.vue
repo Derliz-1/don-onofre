@@ -76,7 +76,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import api from '../api/admin'
+import api from '../api'
 import axios from 'axios'
 
 const productos = ref([])
