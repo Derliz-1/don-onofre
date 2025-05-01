@@ -140,7 +140,7 @@ onMounted(async () => {
   text-align: center;
   cursor: pointer;
   font-weight: bold;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 5px rgba(201, 120, 120, 0.1);
 }
 .card:hover {
   background: #ddd;
@@ -150,7 +150,7 @@ ul {
   padding: 0;
 }
 li {
-  background: #fafafa;
+  background:rgb(250, 250, 250);
   margin-bottom: 8px;
   padding: 10px;
   border-radius: 6px;
@@ -171,6 +171,6 @@ li {
 h2 {
   text-align: center;
   margin-bottom: 20px;
-  color: #007bff;
+  color:rgb(25, 213, 66);
 }
 </style>

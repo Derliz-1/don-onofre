@@ -118,7 +118,7 @@ class ProductoController extends Controller
     
             $ruta = $request->file('imagen')->store('public/productos');
     
-            $url = secure_url(Storage::url($ruta)); // ✅ URL con HTTPS siempre
+            $url = secure_url(Storage::url($ruta));
     
             return response()->json(['url' => $url]);
         } catch (\Exception $e) {
